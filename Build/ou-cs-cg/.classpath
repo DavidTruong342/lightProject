@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="output" path="bin/default"/>
+	<classpathentry output="bin/main" kind="src" path="src/main/java">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all-main/2.4.0-rc-20200202/6a86a9ce357c085e3052efcf639447f9957b82b8/jogl-all-main-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all-main/2.4.0-rc-20200202/6a86a9ce357c085e3052efcf639447f9957b82b8/jogl-all-main-2.4.0-rc-20200202.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt-main/2.4.0-rc-20200202/6a86a9ce357c085e3052efcf639447f9957b82b8/gluegen-rt-main-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt-main/2.4.0-rc-20200202/6a86a9ce357c085e3052efcf639447f9957b82b8/gluegen-rt-main-2.4.0-rc-20200202.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/bd71a9a311f29caf548f389b1e0c5be7fddd066e/jogl-all-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/7882665be2181858983144c6a8a55f417345d335/jogl-all-2.4.0-rc-20200202.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/bd71a9a311f29caf548f389b1e0c5be7fddd066e/jogl-all-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/fa1d92a647d4a62d3a6dccf0d664b9b0994f02e4/jogl-all-2.4.0-rc-20200202-natives-linux-amd64.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/bd71a9a311f29caf548f389b1e0c5be7fddd066e/jogl-all-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/49af062c14ba6de8ddd8e0e2d6780217bae679ac/jogl-all-2.4.0-rc-20200202-natives-linux-i586.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/bd71a9a311f29caf548f389b1e0c5be7fddd066e/jogl-all-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/201f9210efaa34daf059b04ceff3ae507dfbc03c/jogl-all-2.4.0-rc-20200202-natives-macosx-universal.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/bd71a9a311f29caf548f389b1e0c5be7fddd066e/jogl-all-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/740e95895d3d4acef338f98d32cb63fe66037615/jogl-all-2.4.0-rc-20200202-natives-windows-amd64.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/bd71a9a311f29caf548f389b1e0c5be7fddd066e/jogl-all-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.jogl/jogl-all/2.4.0-rc-20200202/fd9214af5839c38f2a788432487f8a490e23efcb/jogl-all-2.4.0-rc-20200202-natives-windows-i586.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/291b6f37847ad233c0a98b5bb14d21a32cd521f8/gluegen-rt-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/b0de13cfa89929226e8ce034db7d16f6dcefe18b/gluegen-rt-2.4.0-rc-20200202.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/291b6f37847ad233c0a98b5bb14d21a32cd521f8/gluegen-rt-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/3a4c4abce18f9203825a1ef8475340ad1e92462f/gluegen-rt-2.4.0-rc-20200202-natives-linux-amd64.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/291b6f37847ad233c0a98b5bb14d21a32cd521f8/gluegen-rt-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/caba596879865eeb6a766d2fde2a1027be735c8b/gluegen-rt-2.4.0-rc-20200202-natives-linux-i586.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/291b6f37847ad233c0a98b5bb14d21a32cd521f8/gluegen-rt-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/51808433089f05b15731c22107ba282d09817432/gluegen-rt-2.4.0-rc-20200202-natives-macosx-universal.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/291b6f37847ad233c0a98b5bb14d21a32cd521f8/gluegen-rt-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/a89d634c434611962c73235f72b3e518123bbf46/gluegen-rt-2.4.0-rc-20200202-natives-windows-amd64.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/291b6f37847ad233c0a98b5bb14d21a32cd521f8/gluegen-rt-2.4.0-rc-20200202-sources.jar" kind="lib" path="C:/Users/truon/.gradle/caches/modules-2/files-2.1/com.metsci.ext.org.jogamp.gluegen/gluegen-rt/2.4.0-rc-20200202/4e7306d4784ca3ed4e2ce4d4d3a3e8b331c8c8cc/gluegen-rt-2.4.0-rc-20200202-natives-windows-i586.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+</classpath>
