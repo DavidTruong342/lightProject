@@ -62,8 +62,8 @@ public final class Model
 	private LightBox lightbox;
 	private ArrayList<Mirror> mirrors;
 	private ArrayList<Prism> prisms;
-	private ArrayList<Convex> convexLenses;
-	private ArrayList<Concave> concaveLenses;
+	private ArrayList<Lense> convexLenses;
+	private ArrayList<Lense> concaveLenses;
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -82,8 +82,8 @@ public final class Model
 		lightbox = new LightBox();
 		mirrors = new ArrayList<Mirror>();
 		prisms = new ArrayList<Prism>();
-		convexLenses = new ArrayList<Convex>();
-		concaveLenses = new ArrayList<Concave>();
+		convexLenses = new ArrayList<Lense>();
+		concaveLenses = new ArrayList<Lense>();
 	}
 
 	//**********************************************************************
@@ -128,12 +128,12 @@ public final class Model
 		return Collections.unmodifiableList(prisms);
 	}
 	
-	public List<Convex> getConvexLenses()
+	public List<Lense> getConvexLenses()
 	{
 		return Collections.unmodifiableList(convexLenses);
 	}
 	
-	public List<Concave> getConcaveLenses()
+	public List<Lense> getConcaveLenses()
 	{
 		return Collections.unmodifiableList(concaveLenses);
 	}
@@ -194,10 +194,10 @@ public final class Model
 						addPrism(q);
 						break;
 					case "Convex":
-						addConvex(q);
+						addLense(q, true);
 						break;
 					case "Concave":
-						addConcave(q);
+						addLense(q, false);
 						break;
 					default:
 						break;
@@ -271,22 +271,33 @@ public final class Model
 		});;
 	}
 	
-	public void addConvex(Point q)
+	public void addLense(Point q, boolean convex)
 	{
 		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
 			public void update(double[] p) {
-				convexLenses.add(new Convex(
-										new Point2D.Double(p[0] - 5, p[1] - 30),
-										new Point2D.Double(p[0] + 5, p[1] - 30),
-										new Point2D.Double(p[0] + 5, p[1] + 30),
-										new Point2D.Double(p[0] - 5, p[1] + 30),
-										new Point2D.Double(p[0], p[1]),
-										new Point2D.Double(p[0] - 15, p[1]),
-										new Point2D.Double(p[0] + 15, p[1])));
+				if(convex) {
+					convexLenses.add(new Lense(
+							new Point2D.Double(p[0] - 5, p[1] - 30),
+							new Point2D.Double(p[0] + 5, p[1] - 30),
+							new Point2D.Double(p[0] + 5, p[1] + 30),
+							new Point2D.Double(p[0] - 5, p[1] + 30),
+							new Point2D.Double(p[0], p[1]),
+							new Point2D.Double(p[0] - 15, p[1]),
+							new Point2D.Double(p[0] + 15, p[1])));
+				}
+				else {
+					concaveLenses.add(new Lense(
+							new Point2D.Double(p[0] - 10, p[1] - 30),
+							new Point2D.Double(p[0] + 10, p[1] - 30),
+							new Point2D.Double(p[0] + 10, p[1] + 30),
+							new Point2D.Double(p[0] - 10, p[1] + 30),
+							new Point2D.Double(p[0], p[1])));
+				}
 			}
 		});;
 	}
 	
+	/*
 	public void addConcave(Point q)
 	{
 		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
@@ -300,6 +311,7 @@ public final class Model
 			}
 		});
 	}
+	*/
 	
 	public void toggleLight()
 	{
@@ -462,7 +474,7 @@ public final class Model
 		}
 	}
 	
-	public class Convex {
+	public class Lense {
 		Point2D.Double bl;
 		Point2D.Double br;
 		Point2D.Double tr;
@@ -473,7 +485,7 @@ public final class Model
 		double[] lCurveX;
 		double[] lCurveY;
 		
-		public Convex(Point2D.Double bl, Point2D.Double br, Point2D.Double tr,
+		public Lense(Point2D.Double bl, Point2D.Double br, Point2D.Double tr,
 						Point2D.Double tl, Point2D.Double center, Point2D.Double leftCtrl,
 						Point2D.Double rightCtrl) {
 			this.bl = bl;
@@ -482,7 +494,18 @@ public final class Model
 			this.tl = tl;
 			this.center = center;
 			
-			createCurves(leftCtrl, rightCtrl);
+			createConvex(leftCtrl, rightCtrl);
+		}
+		
+		public Lense(Point2D.Double bl, Point2D.Double br, Point2D.Double tr,
+				Point2D.Double tl, Point2D.Double center) {
+			this.bl = bl;
+			this.br = br;
+			this.tr = tr;
+			this.tl = tl;
+			this.center = center;
+			
+			createConcave();
 		}
 		
 		public Point2D.Double getBl() {
@@ -521,7 +544,7 @@ public final class Model
 			return lCurveY;
 		}
 		
-		private void createCurves(Point2D.Double leftCtrl, Point2D.Double rightCtrl) {
+		private void createConvex(Point2D.Double leftCtrl, Point2D.Double rightCtrl) {
 			int i;
 			double t;
 			
@@ -537,8 +560,26 @@ public final class Model
 				lCurveY[i] = (Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*leftCtrl.y + Math.pow(t, 2)*bl.y);
 			}
 		}
+		
+		private void createConcave() {
+			int i;
+			double t;
+			
+			rCurveX = new double[11];
+			rCurveY = new double[11];
+			lCurveX = new double[11];
+			lCurveY = new double[11];
+			
+			for(i = 0, t = 0; i < 11 && t < 1.1; i++, t = t + 0.1) {
+				rCurveX[i] = (Math.pow((1-t), 2)*br.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*tr.x);
+				rCurveY[i] = (Math.pow((1-t), 2)*br.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*tr.y);
+				lCurveX[i] = (Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*bl.x);
+				lCurveY[i] = (Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*bl.y);
+			}
+		}
 	}
 	
+	/*
 	public class Concave {
 		Point2D.Double bl;
 		Point2D.Double br;
@@ -614,6 +655,7 @@ public final class Model
 			}
 		}
 	}
+	*/
 }
 
 //******************************************************************************

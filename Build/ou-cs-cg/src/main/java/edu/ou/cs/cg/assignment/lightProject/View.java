@@ -412,7 +412,7 @@ public final class View
 	
 	private void drawConvex(GL2 gl)
 	{
-		java.util.List<Model.Convex> convexLenses = model.getConvexLenses();
+		java.util.List<Model.Lense> convexLenses = model.getConvexLenses();
 		
 		setColor(gl, 199, 199, 199);	// Light gray
 		
@@ -425,7 +425,7 @@ public final class View
 		// Calculate Bezier curves for each of the lenses at some point
 		// Determine where the control points will be
 		
-		for (Model.Convex c : convexLenses)
+		for (Model.Lense c : convexLenses)
 		{
 			rCurveX = c.getRCurveX();
 			rCurveY = c.getRCurveY();
@@ -456,7 +456,7 @@ public final class View
 	
 	private void drawConcave(GL2 gl)
 	{
-		java.util.List<Model.Concave> concaveLenses = model.getConcaveLenses();
+		java.util.List<Model.Lense> concaveLenses = model.getConcaveLenses();
 		
 		int i;
 		double[] rCurveX;
@@ -469,7 +469,7 @@ public final class View
 		// Calculate Bezier curves for each of the lenses at some point
 		// The control point will be the center point
 		
-		for (Model.Concave c : concaveLenses)
+		for (Model.Lense c : concaveLenses)
 		{
 			rCurveX = c.getRCurveX();
 			rCurveY = c.getRCurveY();
