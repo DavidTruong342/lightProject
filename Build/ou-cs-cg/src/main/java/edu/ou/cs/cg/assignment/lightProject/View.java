@@ -73,6 +73,17 @@ public final class View
 
 	private final KeyHandler			keyHandler;
 	private final MouseHandler			mouseHandler;
+	
+	// These are the trace for the lightbeam
+	private final Deque<Point2D.Double>	hitPoints1;
+	private final Deque<Point2D.Double> hitPoints2;
+	
+	// The vectors for the lightpoints
+	private Point2D.Double vector1 = new Point2D.Double(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
+	
+	private Point2D.Double vector2 = new Point2D.Double(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
+	
+	
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -88,6 +99,9 @@ public final class View
 
 		// Initialize model (scene data and parameter manager)
 		model = new Model(this);
+		
+		hitPoints1 = new ArrayDeque<Point2D.Double>();
+		hitPoints2 = new ArrayDeque<Point2D.Double>();
 
 		// Initialize controller (interaction handlers)
 		keyHandler = new KeyHandler(this, model);
@@ -115,6 +129,17 @@ public final class View
 	public int	getHeight()
 	{
 		return h;
+	}
+	
+	//**********************************************************************
+	// Public methods
+	//**********************************************************************
+	
+	// Clears the trace and resets the vector
+	public void clearLight()
+	{
+		hitPoints1.clear();
+		vector1.setLocation(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
 	}
 
 	//**********************************************************************
@@ -158,6 +183,10 @@ public final class View
 	private void	update(GLAutoDrawable drawable)
 	{
 		counter++;									// Advance animation counter
+		
+		Point2D.Double lp = model.getLightPoint();
+		
+		updatePointWithReflection(lp);
 	}
 
 	private void	render(GLAutoDrawable drawable)
@@ -250,13 +279,34 @@ public final class View
 		drawAxes(gl);								// X and Y axes
 		drawCursor(gl);							// Crosshairs at mouse point
 		drawPolyline(gl);							// Draw the user's sketch
-		drawLightBox(gl);
-		drawMirrors(gl);
-		drawPrisms(gl);
-		drawConvex(gl);
-		drawConcave(gl);
+		
+		// Light project methods
+		drawLight(gl);			// Draw the light beam
+		drawLightBox(gl);		// Draw the lightbox
+		drawMirrors(gl);		// Draw the mirrors
+		drawPrisms(gl);			// Draw the prisms
+		drawConvex(gl);			// Draw convex lenses
+		drawConcave(gl);		// Draw concave lenses
+		
+		// Debugging method that draws the lightpoint
+		drawObject(gl);
+	}
+	
+	// Debugging method to make the location of the lightpoint known
+	private void	drawObject(GL2 gl)
+	{
+		Point2D.Double	object = model.getLightPoint();
+
+		gl.glColor3f(1.0f, 0.0f, 0.0f);
+
+		gl.glBegin(GL.GL_POINTS);
+
+		gl.glVertex2d(object.x, object.y);
+
+		gl.glEnd();
 	}
 
+	// Not used
 	private void	drawBounds(GL2 gl)
 	{
 		gl.glColor3f(0.1f, 0.1f, 0.1f);
@@ -270,6 +320,7 @@ public final class View
 		gl.glEnd();
 	}
 
+	// Not used
 	private void	drawAxes(GL2 gl)
 	{
 		gl.glBegin(GL.GL_LINES);
@@ -284,6 +335,7 @@ public final class View
 		gl.glEnd();
 	}
 
+	// Not used
 	private void	drawCursor(GL2 gl)
 	{
 		Point2D.Double	cursor = model.getCursor();
@@ -305,6 +357,7 @@ public final class View
 		gl.glEnd();
 	}
 
+	// Not used
 	private void	drawPolyline(GL2 gl)
 	{
 		java.util.List<Point2D.Double>	points = model.getPolyline();
@@ -357,6 +410,7 @@ public final class View
 		}
 	}
 	
+	// Draw the lightbox
 	private void drawLightBox(GL2 gl)
 	{
 		Model.LightBox lightbox = model.getLightBox();
@@ -373,6 +427,26 @@ public final class View
 		gl.glEnd();
 	}
 	
+	// Draw the lightbeam
+	private void drawLight(GL2 gl)
+	{
+		if(!model.getLight()) {
+			return;
+		}
+		
+		gl.glColor3f(1.0f, 1.0f, 1.0f);
+		
+		gl.glBegin(GL.GL_LINE_STRIP);
+		
+		for (Point2D.Double hp : hitPoints1)
+		{
+			gl.glVertex2d(hp.x, hp.y);
+		}
+		
+		gl.glEnd();
+	}
+	
+	// Draw the mirrors
 	private void drawMirrors(GL2 gl)
 	{
 		java.util.List<Model.Mirror> mirrors = model.getMirrors();
@@ -392,6 +466,7 @@ public final class View
 		}
 	}
 	
+	// Draw the prisms
 	private void drawPrisms(GL2 gl)
 	{
 		java.util.List<Model.Prism> prisms = model.getPrisms();
@@ -410,6 +485,7 @@ public final class View
 		}
 	}
 	
+	// Draw the convex lenses
 	private void drawConvex(GL2 gl)
 	{
 		java.util.List<Model.Lense> convexLenses = model.getConvexLenses();
@@ -454,6 +530,7 @@ public final class View
 		}
 	}
 	
+	// Draw the concave lenses
 	private void drawConcave(GL2 gl)
 	{
 		java.util.List<Model.Lense> concaveLenses = model.getConcaveLenses();
@@ -501,9 +578,375 @@ public final class View
 		}
 	}
 	
+	// Update the location of the light point
+	private void updatePointWithReflection(Point2D.Double lp)
+	{
+		// Check if a lightbox has been set
+		if((lp.x == 0.0 && lp.y == 0.0) || !model.getLight())
+		{
+			return;
+		}
+		
+		// Travel factor and factored direction vector
+		double factor = w * 0.1;
+		double ddx = vector1.x * factor;
+		double ddy = vector1.y * factor;
+		
+		// All the object lists, new object class should be able to get rid of these
+		ArrayDeque<Point2D.Double> nodes = new ArrayDeque<Point2D.Double>(model.getNodes());
+		java.util.List<Model.Lense> convexLenses = model.getConvexLenses();
+		java.util.List<Model.Lense> concaveLenses = model.getConcaveLenses();
+		java.util.List<Model.Prism> prisms = model.getPrisms();
+		java.util.List<Model.Mirror> mirrors = model.getMirrors();
+		Model.LightBox lightbox = model.getLightBox();
+		
+		// Method variables
+		int number = nodes.size();
+		int i;
+		String type = "NA";
+		String hitType = "NA";
+		int index;
+		
+		pointCalc: while (true)
+		{
+			// Calculate which side the point will reach first. These variables
+			// store that side's vertices and the parametric time to hit it.
+			Point2D.Double		pp1 = new Point2D.Double();
+			Point2D.Double		pp2 = new Point2D.Double();
+			double				tmin = Double.MAX_VALUE;
+			
+			// Temp used to store previous tmin value
+			double 				temp;
+			
+			/*
+			if(hitPoints1.isEmpty())
+			{
+				hitPoints1.add(new Point2D.Double(lp.x, lp.y));
+			}
+			lp.x += ddx;
+			lp.y += ddy;
+			hitPoints1.add(new Point2D.Double(lp.x, lp.y));
+			break;
+			*/
+			
+			// Adds a point to the trace if there are none
+			if(hitPoints1.isEmpty())
+			{
+				hitPoints1.add(new Point2D.Double(lp.x, lp.y));
+			}
+			
+			// Get the tmins of all objects, should be simpler with new method
+			for(i = 0; i < number; i++)
+			{
+				Point2D.Double node = nodes.peekFirst();
+				type = findType(node);
+				index = getIndex(type, node);
+				temp = tmin;
+				switch(type) 
+				{
+					case "Convex":
+						tmin = getTMin(convexLenses.get(index).getBl(), convexLenses.get(index).getBr(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(convexLenses.get(index).getBr(), convexLenses.get(index).getTr(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(convexLenses.get(index).getTr(), convexLenses.get(index).getTl(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(convexLenses.get(index).getTl(), convexLenses.get(index).getBl(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						break;
+					case "Concave":
+						tmin = getTMin(concaveLenses.get(index).getBl(), concaveLenses.get(index).getBr(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(concaveLenses.get(index).getBr(), concaveLenses.get(index).getTr(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(concaveLenses.get(index).getTr(), concaveLenses.get(index).getTl(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(concaveLenses.get(index).getTl(), concaveLenses.get(index).getBl(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						break;
+					case "Prism":
+						tmin = getTMin(prisms.get(index).getBl(), prisms.get(index).getBr(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(prisms.get(index).getBr(), prisms.get(index).getT(), 
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(prisms.get(index).getT(), prisms.get(index).getBl(), 
+								ddx, ddy, pp1, pp2, tmin, lp);
+						break;
+					case "Mirror":
+						tmin = getTMin(mirrors.get(index).getBl(), mirrors.get(index).getBr(), 
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(mirrors.get(index).getBr(), mirrors.get(index).getTr(), 
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(mirrors.get(index).getTr(), mirrors.get(index).getTl(), 
+								ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(mirrors.get(index).getTl(), mirrors.get(index).getBl(),
+								ddx, ddy, pp1, pp2, tmin, lp);
+						break;
+					case "Lightbox":
+						tmin = getTMin(lightbox.getBl(), lightbox.getBr(), ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(lightbox.getBr(), lightbox.getTr(), ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(lightbox.getTr(), lightbox.getTl(), ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(lightbox.getTl(), lightbox.getBl(), ddx, ddy, pp1, pp2, tmin, lp);
+						break;
+				}
+				
+				// Sets the hit type to the lowest tmin object
+				if(tmin < temp)
+				{
+					hitType = new String(type);
+				}
+				nodes.offerLast(nodes.pollFirst());
+			}
+			
+			System.out.printf("%f \n", tmin);
+
+			// Increment normally if greater than the factor (I believe this is right)
+			if(tmin > factor)
+			{
+				lp.x += ddx;
+				lp.y += ddy;
+				hitPoints1.add(new Point2D.Double(lp.x, lp.y));
+				
+				break;
+			}
+			else
+			{
+				System.out.println(hitType);
+				switch(hitType)
+				{
+					case "Mirror":
+						// If it is under 1.0, there will be at least one reflection.
+						// Translate the point to the reflection point along the side.
+						//lp.x += ddx * tmin;
+						//lp.y += ddy * tmin;
+						lp.x += ddx * (tmin / 100);
+						lp.y += ddy * (tmin / 100);
+						hitPoints1.offerLast(new Point2D.Double(lp.x, lp.y));
+
+						// Calculate the CW (outward-pointing) perp vector for the side.
+						double		vdx = pp2.x - pp1.x;	// Calc side vector
+						double		vdy = pp2.y - pp1.y;	// from p1 to p2
+						double		ndx = vdy;			// Calc perp vector:
+						double		ndy = -vdx;				// negate x and swap
+
+						// Need a NORMALIZED perp vector for the reflection calculation.
+						double		nn = Math.sqrt(ndx * ndx + ndy * ndy);
+
+						ndx = ndx / nn;	// Divide each coordinate by the length to
+						ndy = ndy / nn;	// make a UNIT vector normal to the side.
+
+						// Calculate v_reflected. See pages 148-149 and the slide on
+						// "Reflecting Trajectories". (Note: P and v on the slide are
+						// named q and dd here.)
+						double		dot = dot(vector1.x * 2, vector1.y * 2, 0.0, ndx, ndy, 0.0);
+						double		vreflectedx = ddx - 2.0 * dot * ndx;
+						double		vreflectedy = ddy - 2.0 * dot * ndy;
+
+						// Reflect the update vector, and reduce it to compensate for
+						// the distance the point moved to reach the side.
+						ddx = vreflectedx * (factor - tmin);
+						ddy = vreflectedy * (factor - tmin);
+
+						// Also reflect the reference vector. It will change direction
+						// but remain the same length.
+						double		dot2 = dot(vector1.x, vector1.y, 0.0, ndx, ndy, 0.0);
+
+						vector1.x -= 2.0 * dot2 * ndx;
+						vector1.y -= 2.0 * dot2 * ndy;
+						break;
+					case "Lightbox":
+						// Move lightpoint to the edge of the lightbox and stop it
+						lp.x += ddx * (tmin / 100);
+						lp.y += ddy * (tmin / 100);
+						vector1.x = 0.0;
+						vector1.y = 0.0;
+						hitPoints1.offerLast(new Point2D.Double(lp.x, lp.y));
+						break pointCalc;
+				}
+			}
+		}
+	}
+	
 	//**********************************************************************
 	// Private Methods (Utility Functions)
 	//**********************************************************************
+	
+	// Finds the object type of the current node, part of old method
+	private String findType(Point2D.Double node)
+	{
+		java.util.List<Model.Lense> convexLenses = model.getConvexLenses();
+		java.util.List<Model.Lense> concaveLenses = model.getConcaveLenses();
+		java.util.List<Model.Prism> prisms = model.getPrisms();
+		java.util.List<Model.Mirror> mirrors = model.getMirrors();
+		Model.LightBox lightbox = model.getLightBox();
+		int i;
+		
+		if(!convexLenses.isEmpty()) 
+		{
+			for(i = 0; i < convexLenses.size(); i++)
+			{
+				if(convexLenses.get(i).getCenter().equals(node))
+				{
+					return "Convex";
+				}
+			}
+		}
+		
+		if(!concaveLenses.isEmpty())
+		{
+			for(i = 0; i < concaveLenses.size(); i++)
+			{
+				if(concaveLenses.get(i).getCenter().equals(node))
+				{
+					return "Concave";
+				}
+			}
+		}
+		
+		if(!prisms.isEmpty())
+		{
+			for(i = 0; i < prisms.size(); i++)
+			{
+				if(prisms.get(i).getCenter().equals(node))
+				{
+					return "Prism";
+				}
+			}
+		}
+		
+		if(!mirrors.isEmpty())
+		{
+			for(i = 0; i < mirrors.size(); i++)
+			{
+				if(mirrors.get(i).getCenter().equals(node))
+				{
+					return "Mirror";
+				}
+			}
+		}
+		
+		if(lightbox.getCenter().equals(node))
+		{
+			return "Lightbox";
+		}
+		
+		return "NA";
+	}
+	
+	// Finds the index of the node, part of old method
+	private int getIndex(String type, Point2D.Double node)
+	{
+		java.util.List<Model.Lense> convexLenses = model.getConvexLenses();
+		java.util.List<Model.Lense> concaveLenses = model.getConcaveLenses();
+		java.util.List<Model.Prism> prisms = model.getPrisms();
+		java.util.List<Model.Mirror> mirrors = model.getMirrors();
+		Model.LightBox lightbox = model.getLightBox();
+		int i;
+		switch(type) 
+		{
+			case "Convex":
+				for(i = 0; i < convexLenses.size(); i++)
+				{
+					if(convexLenses.get(i).getCenter().equals(node))
+					{
+						return i;
+					}
+				}
+				break;
+			case "Concave":
+				for(i = 0; i < concaveLenses.size(); i++)
+				{
+					if(concaveLenses.get(i).getCenter().equals(node))
+					{
+						return i;
+					}
+				}
+				break;
+			case "Prism":
+				for(i = 0; i < prisms.size(); i++)
+				{
+					if(prisms.get(i).getCenter().equals(node))
+					{
+						return i;
+					}
+				}
+				break;
+			case "Mirror":
+				for(i = 0; i < mirrors.size(); i++)
+				{
+					if(mirrors.get(i).getCenter().equals(node))
+					{
+						return i;
+					}
+				}
+				break;
+			case "Lightbox":
+				return 0;
+		}
+		return -1;
+	}
+	
+	// Gets the tmin of object within the path of the lightpoint
+	private double getTMin(Point2D.Double p1, Point2D.Double p2, double ddx, double ddy, 
+			Point2D.Double pp1, Point2D.Double pp2, double tmin, Point2D.Double lp)
+	{
+		// Calculate the CW (outward-pointing) perp vector for the pair.
+		double			vdx = p2.x - p1.x;		// Calc side vector
+		double			vdy = p2.y - p1.y;		// from p1 to p2
+		double			ndx = vdy;			// Calc perp vector:
+		double			ndy = -vdx;				// negate y and swap
+		
+		// Check if point is inbetween
+		double vdn = Math.sqrt(vdx * vdx + vdy * vdy);
+		double nvdx = vdx / vdn;
+		double nvdy = vdy / vdn;
+		double pdx = lp.x + ddx - p1.x;
+		double pdy = lp.y + ddy - p1.y;
+		double dd = dot(nvdx, nvdy, 0.0, pdx, pdy, 0.0);
+		if(!(dd >= 0 && dd <= vdn))
+		{
+			return tmin;
+		}
+
+		// See page 175 and the slide on "Intersection of a Line through
+		// a Line". (Note: R and v on the slide are named q and w here.)
+		double			wdx = p1.x - lp.x;		// Calc test vector
+		double			wdy = p1.y - lp.y;		// from q to p1
+
+		// Calculate the top part of the t_hit equation.
+		double			dnw = dot(ndx, ndy, 0.0, wdx, wdy, 0.0);
+
+		// Check if q is strictly on the inside of the polygon. The dot
+		// product will be 0 if q is on a side, or slightly positive if
+		// it is beyond it (which can happen due to roundoff error). See
+		// Figure 4.37 and the dot products below it on page 176.
+		if (dnw < 0.0)
+		{
+			// Calculate the bottom part of the t_hit equation.
+			double	dnv = dot(ndx, ndy, 0.0, vector1.x * 2, vector1.y * 2, 0.0);
+
+			// If the dot product is zero, the direction of motion is
+			// parallel to the side. Disqualify it as a hit candidate
+			// (even if the point is exactly ON the side).
+			double	thit = ((dnv != 0.0) ? (dnw / dnv) : 0.0);
+
+			// Remember the side with the smallest positive t_hit.
+			// It's the side that the point will reach first.
+			if ((0.0 < thit) && (thit < tmin))
+			{
+				pp1.setLocation(p1.x, p1.y);
+				pp2.setLocation(p2.x, p2.y);
+				return thit;
+			}
+		}
+		return tmin;
+	}
+	
+	// Dot product method
+	private double dot(double vx, double vy, double vz, double wx, double wy, double wz)
+	{
+		return (vx * wx + vy * wy + vz * wz);
+	}
 	
 	// Sets color, normalizing r, g, b, a values from max 255 to 1.0.
 	private void	setColor(GL2 gl, int r, int g, int b, int a)

@@ -64,35 +64,42 @@ public final class KeyHandler extends KeyAdapter
 
 		switch (e.getKeyCode())
 		{
+			// Set mode to lightbox
 			case KeyEvent.VK_NUMPAD1:
 			case KeyEvent.VK_1:
-				model.setStatus("LightBox");
+				model.setStatus("Lightbox");
 				break;
 			
+			// Set mode to mirror
 			case KeyEvent.VK_NUMPAD2:
 			case KeyEvent.VK_2:
 				model.setStatus("Mirror");
 				break;
 			
+			// Set mode to prism
 			case KeyEvent.VK_NUMPAD3:
 			case KeyEvent.VK_3:
 				model.setStatus("Prism");
 				break;
 				
+			// Set mode to convex
 			case KeyEvent.VK_NUMPAD4:
 			case KeyEvent.VK_4:
 				model.setStatus("Convex");
 				break;
 				
+			// Set mode to concave
 			case KeyEvent.VK_NUMPAD5:
 			case KeyEvent.VK_5:
 				model.setStatus("Concave");
 				break;
 				
+			// Toggle light
 			case KeyEvent.VK_ENTER:
-				model.toggleLight();
+				model.toggleLight(false);
 				break;
 
+			/*
 			case KeyEvent.VK_NUMPAD6:
 			case KeyEvent.VK_6:
 				break;
@@ -124,7 +131,8 @@ public final class KeyHandler extends KeyAdapter
 			case KeyEvent.VK_C:
 				model.toggleColorful();
 				return;
-
+			*/
+			
 			case KeyEvent.VK_CLEAR:
 			case KeyEvent.VK_D:
 			case KeyEvent.VK_DELETE:
