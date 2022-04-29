@@ -15,7 +15,7 @@
 //
 //******************************************************************************
 
-package edu.ou.cs.cg.assignment.homework03;
+package edu.ou.cs.cg.assignment.lightProject;
 
 //import java.lang.*;
 import java.awt.*;
@@ -592,6 +592,8 @@ public final class View
 		double ddx = vector1.x * factor;
 		double ddy = vector1.y * factor;
 		
+		System.out.println(factor);
+		
 		// All the object lists, new object class should be able to get rid of these
 		ArrayDeque<Point2D.Double> nodes = new ArrayDeque<Point2D.Double>(model.getNodes());
 		java.util.List<Model.Lense> convexLenses = model.getConvexLenses();
@@ -719,8 +721,8 @@ public final class View
 						// Translate the point to the reflection point along the side.
 						//lp.x += ddx * tmin;
 						//lp.y += ddy * tmin;
-						lp.x += ddx * (tmin / 100);
-						lp.y += ddy * (tmin / 100);
+						lp.x += ddx * (tmin / factor);
+						lp.y += ddy * (tmin / factor);
 						hitPoints1.offerLast(new Point2D.Double(lp.x, lp.y));
 
 						// Calculate the CW (outward-pointing) perp vector for the side.
@@ -744,8 +746,8 @@ public final class View
 
 						// Reflect the update vector, and reduce it to compensate for
 						// the distance the point moved to reach the side.
-						ddx = vreflectedx * (factor - tmin);
-						ddy = vreflectedy * (factor - tmin);
+						ddx = vreflectedx * (1.0 - tmin / factor);
+						ddy = vreflectedy * (1.0 - tmin / factor);
 
 						// Also reflect the reference vector. It will change direction
 						// but remain the same length.
@@ -756,8 +758,8 @@ public final class View
 						break;
 					case "Lightbox":
 						// Move lightpoint to the edge of the lightbox and stop it
-						lp.x += ddx * (tmin / 100);
-						lp.y += ddy * (tmin / 100);
+						lp.x += ddx * (tmin / factor);
+						lp.y += ddy * (tmin / factor);
 						vector1.x = 0.0;
 						vector1.y = 0.0;
 						hitPoints1.offerLast(new Point2D.Double(lp.x, lp.y));

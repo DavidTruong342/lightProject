@@ -17,7 +17,7 @@
 @if "%DEBUG%" == "" @echo off
 @rem ##########################################################################
 @rem
-@rem  polygons startup script for Windows
+@rem  lightProject startup script for Windows
 @rem
 @rem ##########################################################################
 
@@ -32,7 +32,7 @@ set APP_HOME=%DIRNAME%..
 @rem Resolve any "." and ".." in APP_HOME to make it shorter.
 for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
 
-@rem Add default JVM options here. You can also use JAVA_OPTS and POLYGONS_OPTS to pass JVM options to this script.
+@rem Add default JVM options here. You can also use JAVA_OPTS and LIGHT_PROJECT_OPTS to pass JVM options to this script.
 set DEFAULT_JVM_OPTS="-Xms256m" "-Xmx768m" "-noclassgc" "-Dfile.encoding=utf-8" "-Dapple.laf.useScreenMenuBar=false" "-Dapple.awt.showGrowBox=true" "-Dapple.awt.brushMetalLook=false" "-Dapple.awt.antialiasing=on" "-Dapple.awt.graphics.UseQuartz=true"
 
 @rem Find java.exe
@@ -70,17 +70,17 @@ goto fail
 set CLASSPATH=%APP_HOME%\lib\ou-cs-cg-1.2.1.jar;%APP_HOME%\lib\jogl-all-main-2.4.0-rc-20200202.jar;%APP_HOME%\lib\gluegen-rt-main-2.4.0-rc-20200202.jar;%APP_HOME%\lib\jogl-all-2.4.0-rc-20200202.jar;%APP_HOME%\lib\jogl-all-2.4.0-rc-20200202-natives-linux-amd64.jar;%APP_HOME%\lib\jogl-all-2.4.0-rc-20200202-natives-linux-i586.jar;%APP_HOME%\lib\jogl-all-2.4.0-rc-20200202-natives-macosx-universal.jar;%APP_HOME%\lib\jogl-all-2.4.0-rc-20200202-natives-windows-amd64.jar;%APP_HOME%\lib\jogl-all-2.4.0-rc-20200202-natives-windows-i586.jar;%APP_HOME%\lib\gluegen-rt-2.4.0-rc-20200202.jar;%APP_HOME%\lib\gluegen-rt-2.4.0-rc-20200202-natives-linux-amd64.jar;%APP_HOME%\lib\gluegen-rt-2.4.0-rc-20200202-natives-linux-i586.jar;%APP_HOME%\lib\gluegen-rt-2.4.0-rc-20200202-natives-macosx-universal.jar;%APP_HOME%\lib\gluegen-rt-2.4.0-rc-20200202-natives-windows-amd64.jar;%APP_HOME%\lib\gluegen-rt-2.4.0-rc-20200202-natives-windows-i586.jar
 
 
-@rem Execute polygons
-"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %POLYGONS_OPTS%  -classpath "%CLASSPATH%" edu.ou.cs.cg.example.Polygons %*
+@rem Execute lightProject
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %LIGHT_PROJECT_OPTS%  -classpath "%CLASSPATH%" edu.ou.cs.cg.assignment.lightProject.Application %*
 
 :end
 @rem End local scope for the variables with windows NT shell
 if "%ERRORLEVEL%"=="0" goto mainEnd
 
 :fail
-rem Set variable POLYGONS_EXIT_CONSOLE if you need the _script_ return code instead of
+rem Set variable LIGHT_PROJECT_EXIT_CONSOLE if you need the _script_ return code instead of
 rem the _cmd.exe /c_ return code!
-if  not "" == "%POLYGONS_EXIT_CONSOLE%" exit 1
+if  not "" == "%LIGHT_PROJECT_EXIT_CONSOLE%" exit 1
 exit /b 1
 
 :mainEnd

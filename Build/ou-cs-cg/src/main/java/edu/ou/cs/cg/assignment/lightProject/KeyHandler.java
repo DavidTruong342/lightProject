@@ -13,7 +13,7 @@
 //
 //******************************************************************************
 
-package edu.ou.cs.cg.assignment.homework03;
+package edu.ou.cs.cg.assignment.lightProject;
 
 //import java.lang.*;
 import java.awt.Component;

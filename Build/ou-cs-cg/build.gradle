@@ -209,17 +209,17 @@ def createScript(project, jvmOpts, name, mainClassName)
 ////createScript(project, altJvmArgs, 'testing', 'edu.ou.cs.cg.example.Test')
 
 // These are single-class applications in the 'example' package
-createScript(project, altJvmArgs, 'gasket', 'edu.ou.cs.cg.example.Gasket')
-createScript(project, altJvmArgs, 'lorenz', 'edu.ou.cs.cg.example.Lorenz')
-createScript(project, altJvmArgs, 'polygons', 'edu.ou.cs.cg.example.Polygons')
+//createScript(project, altJvmArgs, 'gasket', 'edu.ou.cs.cg.example.Gasket')
+//createScript(project, altJvmArgs, 'lorenz', 'edu.ou.cs.cg.example.Lorenz')
+//createScript(project, altJvmArgs, 'polygons', 'edu.ou.cs.cg.example.Polygons')
 ////createScript(project, altJvmArgs, 'shading', 'edu.ou.cs.cg.example.Shading')
-createScript(project, altJvmArgs, 'viewport', 'edu.ou.cs.cg.example.Viewport')
-createScript(project, altJvmArgs, 'viewgrid', 'edu.ou.cs.cg.example.Viewgrid')
+//createScript(project, altJvmArgs, 'viewport', 'edu.ou.cs.cg.example.Viewport')
+//createScript(project, altJvmArgs, 'viewgrid', 'edu.ou.cs.cg.example.Viewgrid')
 ////createScript(project, altJvmArgs, 'wireframe', 'edu.ou.cs.cg.example.Wireframe')
 
 // These are multi-class applications in 'application' subpackages
-createScript(project, altJvmArgs, 'interaction',
-             'edu.ou.cs.cg.application.interaction.Application')
+//createScript(project, altJvmArgs, 'interaction',
+//             'edu.ou.cs.cg.application.interaction.Application')
 ////createScript(project, altJvmArgs, 'reflect',
 ////             'edu.ou.cs.cg.application.reflect.Application')
 ////createScript(project, altJvmArgs, 'scene',
@@ -238,12 +238,12 @@ createScript(project, altJvmArgs, 'interaction',
 ////             'edu.ou.cs.cg.utilities.Network')
 
 // These will be uncommented successively for each homework assignment.
-createScript(project, altJvmArgs, 'hw01',
-             'edu.ou.cs.cg.assignment.homework01.Application')
-createScript(project, altJvmArgs, 'hw02',
-             'edu.ou.cs.cg.assignment.homework02.Application')
-createScript(project, altJvmArgs, 'hw03',
-             'edu.ou.cs.cg.assignment.homework03.Application')
+//createScript(project, altJvmArgs, 'hw01',
+//             'edu.ou.cs.cg.assignment.homework01.Application')
+//createScript(project, altJvmArgs, 'hw02',
+//             'edu.ou.cs.cg.assignment.homework02.Application')
+createScript(project, altJvmArgs, 'lightProject',
+             'edu.ou.cs.cg.assignment.lightProject.Application')
 ////createScript(project, altJvmArgs, 'hw04',
 ////             'edu.ou.cs.cg.assignment.homework04.Application')
 ////createScript(project, altJvmArgs, 'hw05',
@@ -252,10 +252,10 @@ createScript(project, altJvmArgs, 'hw03',
 ////             'edu.ou.cs.cg.assignment.homework06.Application')
 
 // These will be uncommented successively after each homework assignment.
-createScript(project, altJvmArgs, 'hw01chris',
-             'edu.ou.cs.cg.assignment.solution01.Application')
-createScript(project, altJvmArgs, 'hw02chris',
-             'edu.ou.cs.cg.assignment.solution02.Application')
+//createScript(project, altJvmArgs, 'hw01chris',
+//             'edu.ou.cs.cg.assignment.solution01.Application')
+//createScript(project, altJvmArgs, 'hw02chris',
+//             'edu.ou.cs.cg.assignment.solution02.Application')
 //createScript(project, altJvmArgs, 'hw03chris',
 //             'edu.ou.cs.cg.assignment.solution03.Application')
 ////createScript(project, altJvmArgs, 'hw04chris',
