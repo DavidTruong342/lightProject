@@ -270,6 +270,22 @@ public final class Model
 		});;
 	}
 	
+	public void clearScene()
+	{
+		view.getCanvas().invoke(false, new BasicUpdater() {
+			public void update(GL2 gl) {
+				mirrors.clear();
+				prisms.clear();
+				convexLenses.clear();
+				concaveLenses.clear();
+				nodes.clear();
+				lightElements.clear();
+				lightbox = new LightBox();
+				toggleLight(true);
+			}
+		});;
+	}
+	
 	// Sets the type of object being places
 	public void setStatus(String s)
 	{
@@ -426,10 +442,10 @@ public final class Model
 	}
 	*/
 	
-	// Toggles drawing the light (if object is placed light is turned off, otherwise toggle)
+	// Toggles drawing the light (if object is placed/deleted light is turned off, otherwise toggle)
 	public void toggleLight(boolean override)
 	{
-		// Checks if object is placed
+		// Checks if object is placed/deleted
 		if(override) {
 			light = false;
 		}

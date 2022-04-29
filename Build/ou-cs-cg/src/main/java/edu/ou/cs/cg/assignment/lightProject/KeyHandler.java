@@ -137,6 +137,7 @@ public final class KeyHandler extends KeyAdapter
 			case KeyEvent.VK_D:
 			case KeyEvent.VK_DELETE:
 				model.clearPolyline();
+				model.clearScene();
 				return;
 		}
 
