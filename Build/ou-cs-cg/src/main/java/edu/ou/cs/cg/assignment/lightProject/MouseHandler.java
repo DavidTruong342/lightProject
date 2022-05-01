@@ -60,10 +60,7 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseClicked(MouseEvent e)
 	{
-		if (Utilities.isShiftDown(e))
-			model.setOriginInViewCoordinates(e.getPoint());
-		else
-			model.addPolylinePointInViewCoordinates(e.getPoint());
+		model.addLightElementInViewCoordinates(e.getPoint());
 	}
 
 	public void		mouseEntered(MouseEvent e)
@@ -90,7 +87,6 @@ public final class MouseHandler extends MouseAdapter
 
 	public void		mouseDragged(MouseEvent e)
 	{
-		//model.addPolylinePointInViewCoordinates(e.getPoint());
 		model.setCursorInViewCoordinates(e.getPoint());
 	}
 
