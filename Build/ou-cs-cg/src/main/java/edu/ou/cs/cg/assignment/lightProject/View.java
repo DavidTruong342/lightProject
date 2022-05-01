@@ -139,7 +139,42 @@ public final class View
 	public void clearLight()
 	{
 		hitPoints1.clear();
-		vector1.setLocation(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
+		
+		ArrayDeque<Model.LightElement> elements = new ArrayDeque<Model.LightElement>(model.getLightElements());
+		
+		boolean noLightBox = true;
+		for(Model.LightElement le : elements)
+		{
+			if(le.getType().equals("Lightbox"))
+			{
+				double rotation = le.getRotation();
+				
+				// Get transformed points
+				Point2D.Double tr = getTransformedPoint(le.getTr(), le);
+				Point2D.Double br = getTransformedPoint(le.getBr(), le);
+				
+				// Calculate the CW (outward-pointing) perp vector for the side.
+				// Calc side vector from lightbox bottom right to top right
+				double vdx = tr.x - br.x;
+				double vdy = tr.y - br.y;
+				
+				double		ndx = vdy;				// Calc perp vector:
+				double		ndy = -vdx;				// negate x and swap
+
+				// Need a NORMALIZED perp vector
+				double		nn = Math.sqrt(ndx * ndx + ndy * ndy);
+
+				ndx = ndx / nn;	// Divide each coordinate by the length to
+				ndy = ndy / nn;	// make a UNIT vector normal to the side.
+				
+				vector1.setLocation(ndx / DEFAULT_FRAMES_PER_SECOND, ndy / DEFAULT_FRAMES_PER_SECOND);
+				noLightBox = false;
+				break;
+			}
+		}
+		
+		if(noLightBox)
+			vector1.setLocation(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
 	}
 
 	//**********************************************************************
@@ -321,20 +356,32 @@ public final class View
 		
 		setColor(gl, 93, 201, 244);		// Cyan
 		
-		gl.glBegin(GL2.GL_POLYGON);
+		
 		
 		for(Model.LightElement le : elements)
 		{
 			if(le.getType().equals("Lightbox"))
 			{
-				gl.glVertex2d(le.getBl().x, le.getBl().y);
-				gl.glVertex2d(le.getBr().x, le.getBr().y);
-				gl.glVertex2d(le.getTr().x, le.getTr().y);
-				gl.glVertex2d(le.getTl().x, le.getTl().y);
+				gl.glPushMatrix();
+				
+				gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+				gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
+				
+				gl.glBegin(GL2.GL_POLYGON);
+				
+				gl.glVertex2d(-25.0, -25.0);
+				gl.glVertex2d(25.0, -25.0);
+				gl.glVertex2d(25.0, 25.0);
+				gl.glVertex2d(-25.0, 25.0);
+				
+				gl.glEnd();
+				
+				gl.glPopMatrix();
+				
+				break;
 			}
 		}
 		
-		gl.glEnd();
 	}
 	
 	// Draw the lightbeam
@@ -367,14 +414,21 @@ public final class View
 		{
 			if(le.getType().equals("Mirror"))
 			{
+				gl.glPushMatrix();
+				
+				gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+				gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
+				
 				gl.glBegin(GL2.GL_POLYGON);
 
-				gl.glVertex2d(le.getBl().x, le.getBl().y);
-				gl.glVertex2d(le.getBr().x, le.getBr().y);
-				gl.glVertex2d(le.getTr().x, le.getTr().y);
-				gl.glVertex2d(le.getTl().x, le.getTl().y);
+				gl.glVertex2d(-5.0, -30.0);
+				gl.glVertex2d(5.0, -30.0);
+				gl.glVertex2d(5.0, 30.0);
+				gl.glVertex2d(-5.0, 30.0);
 
 				gl.glEnd();
+				
+				gl.glPopMatrix();
 			}
 		}
 	}
@@ -390,13 +444,20 @@ public final class View
 		{
 			if(le.getType().equals("Prism"))
 			{
+				gl.glPushMatrix();
+				
+				gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+				gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
+				
 				gl.glBegin(GL2.GL_POLYGON);
 				
-				gl.glVertex2d(le.getBl().x, le.getBl().y);
-				gl.glVertex2d(le.getBr().x, le.getBr().y);
-				gl.glVertex2d(le.getT().x, le.getT().y);
+				gl.glVertex2d(-25.0, -25.0);
+				gl.glVertex2d(25.0, -25.0);
+				gl.glVertex2d(0.0, 25.0);
 				
 				gl.glEnd();
+				
+				gl.glPopMatrix();
 			}
 		}
 	}
@@ -418,23 +479,28 @@ public final class View
 		{
 			if(le.getType().equals("Convex"))
 			{
-				rCurveX = le.getRCurveX();
-				rCurveY = le.getRCurveY();
-				lCurveX = le.getLCurveX();
-				lCurveY = le.getLCurveY();
+				rCurveX = le.getDefaultRCurveX();
+				rCurveY = le.getDefaultRCurveY();
+				lCurveX = le.getDefaultLCurveX();
+				lCurveY = le.getDefaultLCurveY();
+				
+				gl.glPushMatrix();
+				
+				gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+				gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
 				
 				gl.glBegin(GL2.GL_POLYGON);
 			
-				gl.glVertex2d(le.getBl().x, le.getBl().y);
-				gl.glVertex2d(le.getBr().x, le.getBr().y);
+				gl.glVertex2d(-5.0, -30.0);
+				gl.glVertex2d(5.0, -30.0);
 				
 				for(i = 0; i < 11; i++)
 				{
 					gl.glVertex2d(rCurveX[i], rCurveY[i]);
 				}
 				
-				gl.glVertex2d(le.getTr().x, le.getTr().y);
-				gl.glVertex2d(le.getTl().x, le.getTl().y);
+				gl.glVertex2d(5.0, 30.0);
+				gl.glVertex2d(-5.0, 30.0);
 				
 				for(i = 0; i < 11; i++)
 				{
@@ -442,6 +508,8 @@ public final class View
 				}
 				
 				gl.glEnd();
+				
+				gl.glPopMatrix();
 			}
 		}
 	}
@@ -463,25 +531,30 @@ public final class View
 		{
 			if(le.getType().equals("Concave"))
 			{
-				rCurveX = le.getRCurveX();
-				rCurveY = le.getRCurveY();
-				lCurveX = le.getLCurveX();
-				lCurveY = le.getLCurveY();
+				rCurveX = le.getDefaultRCurveX();
+				rCurveY = le.getDefaultRCurveY();
+				lCurveX = le.getDefaultLCurveX();
+				lCurveY = le.getDefaultLCurveY();
+				
+				gl.glPushMatrix();
+				
+				gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+				gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
 				
 				gl.glBegin(GL2.GL_TRIANGLE_FAN);
 				
-				gl.glVertex2d(le.getCenter().x, le.getCenter().y);
+				gl.glVertex2d(0.0, 0.0);
 				
-				gl.glVertex2d(le.getBl().x, le.getBl().y);
-				gl.glVertex2d(le.getBr().x, le.getBr().y);
+				gl.glVertex2d(-10.0, -30.0);
+				gl.glVertex2d(10.0, -30.0);
 				
 				for(i = 0; i < 11; i++)
 				{
 					gl.glVertex2d(rCurveX[i], rCurveY[i]);
 				}
 				
-				gl.glVertex2d(le.getTr().x, le.getTr().y);
-				gl.glVertex2d(le.getTl().x, le.getTl().y);
+				gl.glVertex2d(10.0, 30.0);
+				gl.glVertex2d(-10.0, 30.0);
 				
 				for(i = 0; i < 11; i++)
 				{
@@ -489,6 +562,8 @@ public final class View
 				}
 				
 				gl.glEnd();
+				
+				gl.glPopMatrix();
 			}
 		}
 	}
@@ -547,15 +622,29 @@ public final class View
 					case "Concave":
 					case "Mirror":
 					case "Lightbox":
-						tmin = getTMin(element.getBl(), element.getBr(), ddx, ddy, pp1, pp2, tmin, lp);
-						tmin = getTMin(element.getBr(), element.getTr(), ddx, ddy, pp1, pp2, tmin, lp);
-						tmin = getTMin(element.getTr(), element.getTl(), ddx, ddy, pp1, pp2, tmin, lp);
-						tmin = getTMin(element.getTl(), element.getBl(), ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(getTransformedPoint(element.getBl(), element), 
+										getTransformedPoint(element.getBr(), element), 
+										ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(getTransformedPoint(element.getBr(), element), 
+										getTransformedPoint(element.getTr(), element), 
+										ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(getTransformedPoint(element.getTr(), element), 
+										getTransformedPoint(element.getTl(), element), 
+										ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(getTransformedPoint(element.getTl(), element), 
+										getTransformedPoint(element.getBl(), element), 
+										ddx, ddy, pp1, pp2, tmin, lp);
 						break;
 					case "Prism":
-						tmin = getTMin(element.getBl(), element.getBr(), ddx, ddy, pp1, pp2, tmin, lp);
-						tmin = getTMin(element.getBr(), element.getT(), ddx, ddy, pp1, pp2, tmin, lp);
-						tmin = getTMin(element.getT(), element.getBl(), ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(getTransformedPoint(element.getBl(), element), 
+										getTransformedPoint(element.getBr(), element), 
+										ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(getTransformedPoint(element.getBr(), element), 
+										getTransformedPoint(element.getT(), element), 
+										ddx, ddy, pp1, pp2, tmin, lp);
+						tmin = getTMin(getTransformedPoint(element.getT(), element), 
+										getTransformedPoint(element.getBl(), element), 
+										ddx, ddy, pp1, pp2, tmin, lp);
 						break;
 				}
 				
@@ -688,6 +777,19 @@ public final class View
 			}
 		}
 		return tmin;
+	}
+	
+	private Point2D.Double getTransformedPoint(Point2D.Double p, Model.LightElement le)
+	{
+		double nx = p.x - le.getCenter().x;
+		double ny = p.y - le.getCenter().y;
+		double rotation = le.getRotation();
+		double x = Math.cos(Math.toRadians(rotation))*nx - 
+				Math.sin(Math.toRadians(rotation))*ny + le.getCenter().x;
+		double y = Math.sin(Math.toRadians(rotation))*nx + 
+				Math.cos(Math.toRadians(rotation))*ny + le.getCenter().y;
+
+		return new Point2D.Double(x, y);
 	}
 	
 	// Dot product method

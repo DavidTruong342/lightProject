@@ -96,39 +96,33 @@ public final class KeyHandler extends KeyAdapter
 				model.toggleLight(false);
 				break;
 
-			/*
-			case KeyEvent.VK_NUMPAD6:
-			case KeyEvent.VK_6:
+			// Cycle left through objects in the scene
+			case KeyEvent.VK_COMMA:
+				model.cycleElements(true);
 				break;
 				
-			case KeyEvent.VK_NUMPAD7:
-			case KeyEvent.VK_7:
-				p.x -= a;		p.y += a;		break;
-				
-			case KeyEvent.VK_NUMPAD8:
-			case KeyEvent.VK_8:
+			// Cycle right through objects in the scene
+			case KeyEvent.VK_PERIOD:
+				model.cycleElements(false);
 				break;
-				
-			case KeyEvent.VK_NUMPAD9:
-			case KeyEvent.VK_9:
-				p.x += a;		p.y += a;		break;
 				
 			case KeyEvent.VK_LEFT:
-				p.x -= a;		p.y += 0.0;	break;
-
+				if(Utilities.isShiftDown(e)) {
+					model.rotateElement(-1.0);					
+				}
+				else {
+					model.rotateElement(-10.0);
+				}
+				break;
 			case KeyEvent.VK_RIGHT:
-				p.x += a;		p.y += 0.0;	break;
-
-			case KeyEvent.VK_DOWN:
-				p.x += 0.0;	p.y -= a;		break;
-
-			case KeyEvent.VK_UP:
-				p.x += 0.0;	p.y += a;		break;
-
-			case KeyEvent.VK_C:
-				model.toggleColorful();
-				return;
-			*/
+				if(Utilities.isShiftDown(e)) {
+					model.rotateElement(1.0);
+				}
+				else {
+					model.rotateElement(10.0);
+				}
+				break;
+				
 			
 			case KeyEvent.VK_CLEAR:
 			case KeyEvent.VK_D:
