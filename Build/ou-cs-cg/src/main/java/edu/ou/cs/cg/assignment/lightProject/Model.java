@@ -53,27 +53,14 @@ public final class Model
 	// State (internal) variables
 	private final View					view;
 
-	// Model variables - Ignore, I don't want to comment out since I don't know what might break
-	private Point2D.Double				origin;	// Current origin coords
-	private Point2D.Double				cursor;	// Current cursor coords
-	private ArrayList<Point2D.Double>	points;	// Drawn polyline points
-	private boolean					colorful;	// Show rainbow version?
-	
 	// Model variables
+	private Point2D.Double				cursor;	// Current cursor coords
+
+	// Light project model variables
 	private Point2D.Double lightPoint;
 	private String status;
 	private Deque<LightElement> lightElements;
 	private boolean light;
-	
-	// Unsure if I will get rid of this
-	private Deque<Point2D.Double> nodes;
-	
-	// I might get rid of these variables once the new object class is done
-	private LightBox lightbox;
-	private ArrayList<Mirror> mirrors;
-	private ArrayList<Prism> prisms;
-	private ArrayList<Lense> convexLenses;
-	private ArrayList<Lense> concaveLenses;
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -84,34 +71,18 @@ public final class Model
 		this.view = view;
 
 		// Initialize user-adjustable variables (with reasonable default values)
-		origin = new Point2D.Double(0.0, 0.0);
 		cursor = null;
-		points = new ArrayList<Point2D.Double>();
-		colorful = false;
 		
-		// Part of the light project
+		// Initialize light project variables
 		lightPoint = new Point2D.Double(0.0, 0.0);
 		status = "Lightbox";
 		lightElements = new ArrayDeque<LightElement>();
 		light = false;
-		nodes = new ArrayDeque<Point2D.Double>();
-		
-		// May get rid of
-		lightbox = new LightBox();
-		mirrors = new ArrayList<Mirror>();
-		prisms = new ArrayList<Prism>();
-		convexLenses = new ArrayList<Lense>();
-		concaveLenses = new ArrayList<Lense>();
 	}
 
 	//**********************************************************************
 	// Public Methods (Access Variables)
 	//**********************************************************************
-
-	public Point2D.Double	getOrigin()
-	{
-		return new Point2D.Double(origin.x, origin.y);
-	}
 
 	public Point2D.Double	getCursor()
 	{
@@ -120,18 +91,8 @@ public final class Model
 		else
 			return new Point2D.Double(cursor.x, cursor.y);
 	}
-
-	public List<Point2D.Double>	getPolyline()
-	{
-		return Collections.unmodifiableList(points);
-	}
-
-	public boolean	getColorful()
-	{
-		return colorful;
-	}
 	
-	// Light project get methods
+	// Light project getter methods
 	
 	// Get the point of the object that represents the lightbeam
 	public Point2D.Double getLightPoint()
@@ -139,41 +100,19 @@ public final class Model
 		return lightPoint;
 	}
 	
-	public LightBox getLightBox()
+	// Get the type of object being placed
+	public String getStatus()
 	{
-		return lightbox;
+		return status;
 	}
 	
-	public List<Mirror> getMirrors()
-	{
-		return Collections.unmodifiableList(mirrors);
-	}
-	
-	public List<Prism> getPrisms()
-	{
-		return Collections.unmodifiableList(prisms);
-	}
-	
-	public List<Lense> getConvexLenses()
-	{
-		return Collections.unmodifiableList(convexLenses);
-	}
-	
-	public List<Lense> getConcaveLenses()
-	{
-		return Collections.unmodifiableList(concaveLenses);
-	}
-	
-	public Deque<Point2D.Double> getNodes()
-	{
-		return nodes;
-	}
-	
+	// Get all objects in the scene
 	public Deque<LightElement> getLightElements()
 	{
 		return lightElements;
 	}
 	
+	// Get the point the light beam follows
 	public boolean getLight()
 	{
 		return light;
@@ -182,24 +121,6 @@ public final class Model
 	//**********************************************************************
 	// Public Methods (Modify Variables)
 	//**********************************************************************
-
-	public void	setOriginInSceneCoordinates(Point2D.Double q)
-	{
-		view.getCanvas().invoke(false, new BasicUpdater() {
-			public void	update(GL2 gl) {
-				origin = new Point2D.Double(q.x, q.y);
-			}
-		});;
-	}
-
-	public void	setOriginInViewCoordinates(Point q)
-	{
-		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
-			public void	update(double[] p) {
-				origin = new Point2D.Double(p[0], p[1]);
-			}
-		});;
-	}
 
 	public void	setCursorInViewCoordinates(Point q)
 	{
@@ -219,8 +140,10 @@ public final class Model
 		});;
 	}
 
-	// Changed the homework method to place object depending on mode
-	public void	addPolylinePointInViewCoordinates(Point q)
+	// Light project setter methods
+	
+	// Add a light element into the scene
+	public void	addLightElementInViewCoordinates(Point q)
 	{
 		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
 			public void	update(double[] p) {
@@ -244,68 +167,34 @@ public final class Model
 					default:
 						break;
 				}
-				nodes.add(new Point2D.Double(p[0], p[1]));
-				//points.add(new Point2D.Double(p[0], p[1]));
-			}
-		});;
-	}
-
-	// Not used
-	public void	clearPolyline()
-	{
-		view.getCanvas().invoke(false, new BasicUpdater() {
-			public void	update(GL2 gl) {
-				points.clear();
-			}
-		});;
-	}
-
-	// Not used
-	public void	toggleColorful()
-	{
-		view.getCanvas().invoke(false, new BasicUpdater() {
-			public void	update(GL2 gl) {
-				colorful = !colorful;
 			}
 		});;
 	}
 	
+	// Clear the scene of all objects
 	public void clearScene()
 	{
 		view.getCanvas().invoke(false, new BasicUpdater() {
 			public void update(GL2 gl) {
-				mirrors.clear();
-				prisms.clear();
-				convexLenses.clear();
-				concaveLenses.clear();
-				nodes.clear();
 				lightElements.clear();
-				lightbox = new LightBox();
 				toggleLight(true);
 			}
 		});;
 	}
 	
-	// Sets the type of object being places
+	// Sets the type of object being placed
 	public void setStatus(String s)
 	{
 		status = new String(s);
 	}
 	
-	// Creates lightbox or changes its location, only one lightbox should exists
+	// Creates lightbox or changes its location, only one lightbox should exist in the scene
 	public void setLightBox(Point q)
 	{
 		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
 			public void	update(double[] p) {
 				boolean noLightbox = true;
-				// Old method
-				lightbox = new LightBox(
-									new Point2D.Double(p[0] - 25, p[1] - 25),
-									new Point2D.Double(p[0] + 25, p[1] - 25),
-									new Point2D.Double(p[0] + 25, p[1] + 25),
-									new Point2D.Double(p[0] - 25, p[1] + 25),
-									new Point2D.Double(p[0], p[1]));
-				// New method
+				// Set the location of the lightbox if one already exists
 				for (LightElement le : lightElements)
 				{
 					if(le.getType().equals("Lightbox")) {
@@ -318,6 +207,8 @@ public final class Model
 						break;
 					}
 				}
+				
+				// Add a lightbox to the scene if one does not exist
 				if(noLightbox)
 				{
 					lightElements.add(new LightElement("Lightbox", 
@@ -327,7 +218,6 @@ public final class Model
 							new Point2D.Double(p[0] - 25, p[1] + 25), 
 							null, new Point2D.Double(p[0], p[1]), null, null));
 				}
-				//lightPoint.setLocation(p[0] + 25, p[1]);
 				toggleLight(true);
 			}
 		});;
@@ -338,14 +228,6 @@ public final class Model
 	{
 		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
 			public void update(double[] p) {
-				// Old method
-				mirrors.add(new Mirror(
-									new Point2D.Double(p[0] - 5, p[1] - 30),
-									new Point2D.Double(p[0] + 5, p[1] - 30),
-									new Point2D.Double(p[0] + 5, p[1] + 30),
-									new Point2D.Double(p[0] - 5, p[1] + 30),
-									new Point2D.Double(p[0], p[1])));
-				// New method
 				lightElements.add(new LightElement("Mirror", 
 						new Point2D.Double(p[0] - 5, p[1] - 30), 
 						new Point2D.Double(p[0] + 5, p[1] - 30), 
@@ -362,13 +244,6 @@ public final class Model
 	{
 		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
 			public void update(double[] p) {
-				// Old method
-				prisms.add(new Prism(
-									new Point2D.Double(p[0] - 25, p[1] - 25),
-									new Point2D.Double(p[0] + 25, p[1] - 25),
-									new Point2D.Double(p[0], p[1] + 25),
-									new Point2D.Double(p[0], p[1])));
-				// New method
 				lightElements.add(new LightElement("Prism", 
 						new Point2D.Double(p[0] - 25, p[1] - 25), 
 						new Point2D.Double(p[0] + 25, p[1] - 25), 
@@ -384,18 +259,8 @@ public final class Model
 	{
 		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
 			public void update(double[] p) {
-				// Check if convex or concave
+				// Check if the lens is convex or concave
 				if(convex) {
-					// Old method
-					convexLenses.add(new Lense(
-							new Point2D.Double(p[0] - 5, p[1] - 30),
-							new Point2D.Double(p[0] + 5, p[1] - 30),
-							new Point2D.Double(p[0] + 5, p[1] + 30),
-							new Point2D.Double(p[0] - 5, p[1] + 30),
-							new Point2D.Double(p[0], p[1]),
-							new Point2D.Double(p[0] - 15, p[1]),
-							new Point2D.Double(p[0] + 15, p[1])));
-					// New method
 					lightElements.add(new LightElement("Convex", 
 							new Point2D.Double(p[0] - 5, p[1] - 30), 
 							new Point2D.Double(p[0] + 5, p[1] - 30), 
@@ -406,14 +271,6 @@ public final class Model
 							new Point2D.Double(p[0] + 15, p[1])));
 				}
 				else {
-					// Old method
-					concaveLenses.add(new Lense(
-							new Point2D.Double(p[0] - 10, p[1] - 30),
-							new Point2D.Double(p[0] + 10, p[1] - 30),
-							new Point2D.Double(p[0] + 10, p[1] + 30),
-							new Point2D.Double(p[0] - 10, p[1] + 30),
-							new Point2D.Double(p[0], p[1])));
-					// New method
 					lightElements.add(new LightElement("Concave", 
 							new Point2D.Double(p[0] - 10, p[1] - 30),
 							new Point2D.Double(p[0] + 10, p[1] - 30),
@@ -425,22 +282,6 @@ public final class Model
 			}
 		});;
 	}
-	
-	/*
-	public void addConcave(Point q)
-	{
-		view.getCanvas().invoke(false, new ViewPointUpdater(q) {
-			public void update(double[] p) {
-				concaveLenses.add(new Concave(
-										new Point2D.Double(p[0] - 10, p[1] - 30),
-										new Point2D.Double(p[0] + 10, p[1] - 30),
-										new Point2D.Double(p[0] + 10, p[1] + 30),
-										new Point2D.Double(p[0] - 10, p[1] + 30),
-										new Point2D.Double(p[0], p[1])));
-			}
-		});
-	}
-	*/
 	
 	// Toggles drawing the light (if object is placed/deleted light is turned off, otherwise toggle)
 	public void toggleLight(boolean override)
@@ -454,7 +295,13 @@ public final class Model
 		}
 		
 		// Sets the lightpoint back to the lightbox and clear the trace
-		lightPoint.setLocation(lightbox.getCenter().x + 25, lightbox.getCenter().y);
+		for(LightElement le : lightElements)
+		{
+			if(le.getType().equals("Lightbox"))
+			{
+				lightPoint.setLocation(le.getCenter().x + 25, le.getCenter().y);
+			}
+		}
 		view.clearLight();
 	}
 
@@ -502,265 +349,8 @@ public final class Model
 	//**********************************************************************
 	// Object Classes
 	//**********************************************************************
-	public class LightBox {
-		Point2D.Double bl;
-		Point2D.Double br;
-		Point2D.Double tr;
-		Point2D.Double tl;
-		Point2D.Double center;
-		double rotation;
-		
-		public LightBox() {
-			bl = new Point2D.Double(0.0, 0.0);
-			br = new Point2D.Double(0.0, 0.0);
-			tr = new Point2D.Double(0.0, 0.0);
-			tl = new Point2D.Double(0.0, 0.0);
-			center = new Point2D.Double(0.0, 0.0);
-			rotation = 0.0;
-		}
-		
-		public LightBox(Point2D.Double bl, Point2D.Double br, Point2D.Double tr, 
-							Point2D.Double tl, Point2D.Double center) {
-			this.bl = bl;
-			this.br = br;
-			this.tr = tr;
-			this.tl = tl;
-			this.center = center;
-			rotation = 0.0;
-		}
-		
-		public Point2D.Double getBl() {
-			return bl;
-		}
-		
-		public Point2D.Double getBr() {
-			return br;
-		}
-		
-		public Point2D.Double getTr() {
-			return tr;
-		}
-		
-		public Point2D.Double getTl() {
-			return tl;
-		}
-		
-		public Point2D.Double getCenter() {
-			return center;
-		}
-		
-		public double getRotation() {
-			return rotation;
-		}
-		
-		public void setRotation(double rotation) {
-			this.rotation += rotation;
-		}
-	}
 	
-	public class Mirror {
-		Point2D.Double bl;
-		Point2D.Double br;
-		Point2D.Double tr;
-		Point2D.Double tl;
-		Point2D.Double center;
-		double rotation;
-		
-		public Mirror(Point2D.Double bl, Point2D.Double br, Point2D.Double tr, 
-						Point2D.Double tl, Point2D.Double center) {
-			this.bl = bl;
-			this.br = br;
-			this.tr = tr;
-			this.tl = tl;
-			this.center = center;
-			rotation = 0.0;
-		}
-		
-		public Point2D.Double getBl() {
-			return bl;
-		}
-		
-		public Point2D.Double getBr() {
-			return br;
-		}
-		
-		public Point2D.Double getTr() {
-			return tr;
-		}
-		
-		public Point2D.Double getTl() {
-			return tl;
-		}
-		
-		public Point2D.Double getCenter() {
-			return center;
-		}
-		
-		public double getRotation() {
-			return rotation;
-		}
-		
-		public void setRotation(double rotation) {
-			this.rotation += rotation;
-		}
-	}
-	
-	public class Prism {
-		Point2D.Double bl;
-		Point2D.Double br;
-		Point2D.Double t;
-		Point2D.Double center;
-		double rotation;
-		
-		public Prism(Point2D.Double bl, Point2D.Double br, Point2D.Double t, Point2D.Double center) {
-			this.bl = bl;
-			this.br = br;
-			this.t = t;
-			this.center = center;
-			rotation = 0.0;
-		}
-		
-		public Point2D.Double getBl() {
-			return bl;
-		}
-		
-		public Point2D.Double getBr() {
-			return br;
-		}
-		
-		public Point2D.Double getT() {
-			return t;
-		}
-		
-		public Point2D.Double getCenter() {
-			return center;
-		}
-		
-		public double getRotation() {
-			return rotation;
-		}
-		
-		public void setRotation(double rotation) {
-			this.rotation += rotation;
-		}
-	}
-	
-	public class Lense {
-		Point2D.Double bl;
-		Point2D.Double br;
-		Point2D.Double tr;
-		Point2D.Double tl;
-		Point2D.Double center;
-		double[] rCurveX;
-		double[] rCurveY;
-		double[] lCurveX;
-		double[] lCurveY;
-		double rotation;
-		
-		public Lense(Point2D.Double bl, Point2D.Double br, Point2D.Double tr,
-						Point2D.Double tl, Point2D.Double center, Point2D.Double leftCtrl,
-						Point2D.Double rightCtrl) {
-			this.bl = bl;
-			this.br = br;
-			this.tr = tr;
-			this.tl = tl;
-			this.center = center;
-			rotation = 0.0;
-			
-			createConvex(leftCtrl, rightCtrl);
-		}
-		
-		public Lense(Point2D.Double bl, Point2D.Double br, Point2D.Double tr,
-				Point2D.Double tl, Point2D.Double center) {
-			this.bl = bl;
-			this.br = br;
-			this.tr = tr;
-			this.tl = tl;
-			this.center = center;
-			
-			createConcave();
-		}
-		
-		public Point2D.Double getBl() {
-			return bl;
-		}
-		
-		public Point2D.Double getBr() {
-			return br;
-		}
-		
-		public Point2D.Double getTr() {
-			return tr;
-		}
-		
-		public Point2D.Double getTl() {
-			return tl;
-		}
-		
-		public Point2D.Double getCenter() {
-			return center;
-		}
-		
-		public double[] getRCurveX() {
-			return rCurveX;
-		}
-		
-		public double[] getRCurveY() {
-			return rCurveY;
-		}
-		
-		public double[] getLCurveX() {
-			return lCurveX;
-		}
-		
-		public double[] getLCurveY() {
-			return lCurveY;
-		}
-		
-		public double getRotation() {
-			return rotation;
-		}
-		
-		public void setRotation(double rotation) {
-			this.rotation += rotation;
-		}
-		
-		private void createConvex(Point2D.Double leftCtrl, Point2D.Double rightCtrl) {
-			int i;
-			double t;
-			
-			rCurveX = new double[11];
-			rCurveY = new double[11];
-			lCurveX = new double[11];
-			lCurveY = new double[11];
-			
-			for(i = 0, t = 0; i < 11 && t < 1.1; i++, t = t + 0.1) {
-				rCurveX[i] = (Math.pow((1-t), 2)*br.x + 2*t*(1-t)*rightCtrl.x + Math.pow(t, 2)*tr.x);
-				rCurveY[i] = (Math.pow((1-t), 2)*br.y + 2*t*(1-t)*rightCtrl.y + Math.pow(t, 2)*tr.y);
-				lCurveX[i] = (Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*leftCtrl.x + Math.pow(t, 2)*bl.x);
-				lCurveY[i] = (Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*leftCtrl.y + Math.pow(t, 2)*bl.y);
-			}
-		}
-		
-		private void createConcave() {
-			int i;
-			double t;
-			
-			rCurveX = new double[11];
-			rCurveY = new double[11];
-			lCurveX = new double[11];
-			lCurveY = new double[11];
-			
-			for(i = 0, t = 0; i < 11 && t < 1.1; i++, t = t + 0.1) {
-				rCurveX[i] = (Math.pow((1-t), 2)*br.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*tr.x);
-				rCurveY[i] = (Math.pow((1-t), 2)*br.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*tr.y);
-				lCurveX[i] = (Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*bl.x);
-				lCurveY[i] = (Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*bl.y);
-			}
-		}
-	}
-	
-	// This is the general method used for the new method, sorry its messy
+	// Object class that encapsulates all the object types is for the light project
 	public class LightElement {
 		Point2D.Double bl;
 		Point2D.Double br;

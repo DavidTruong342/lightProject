@@ -59,9 +59,6 @@ public final class KeyHandler extends KeyAdapter
 
 	public void		keyPressed(KeyEvent e)
 	{
-		Point2D.Double	p = model.getOrigin();
-		double			a = (Utilities.isShiftDown(e) ? 0.01 : 0.1);
-
 		switch (e.getKeyCode())
 		{
 			// Set mode to lightbox
@@ -136,12 +133,9 @@ public final class KeyHandler extends KeyAdapter
 			case KeyEvent.VK_CLEAR:
 			case KeyEvent.VK_D:
 			case KeyEvent.VK_DELETE:
-				model.clearPolyline();
 				model.clearScene();
 				return;
 		}
-
-		model.setOriginInSceneCoordinates(p);
 	}
 }
 
