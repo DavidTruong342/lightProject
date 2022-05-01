@@ -299,10 +299,40 @@ public final class Model
 		{
 			if(le.getType().equals("Lightbox"))
 			{
-				lightPoint.setLocation(le.getCenter().x + 25, le.getCenter().y);
+				double rotation = le.getRotation();
+				double x = Math.cos(Math.toRadians(rotation))*25.0 + le.getCenter().x;
+				double y = Math.sin(Math.toRadians(rotation))*25.0 + le.getCenter().y;
+				
+				lightPoint.setLocation(x, y);
+				
+				break;
 			}
 		}
 		view.clearLight();
+	}
+	
+	// Cycles through the current objects in the scene (cycle direction based on passed boolean)
+	public void cycleElements(boolean left)
+	{
+		// Checks the case when there are no elements in the scene
+		if(lightElements.size() == 0)
+		{
+			return;
+		}
+		
+		if(left) {
+			lightElements.offerFirst(lightElements.pollLast());
+		}
+		else {
+			lightElements.offerLast(lightElements.pollFirst());
+		}
+	}
+	
+	// Rotate the current selected object
+	public void rotateElement(double rotation)
+	{
+		lightElements.peekLast().setRotation(rotation);
+		toggleLight(true);
 	}
 
 	//**********************************************************************
@@ -362,6 +392,10 @@ public final class Model
 		double[] rCurveY;
 		double[] lCurveX;
 		double[] lCurveY;
+		double[] defaultRCurveX;
+		double[] defaultRCurveY;
+		double[] defaultLCurveX;
+		double[] defaultLCurveY;
 		double rotation;
 		String type;
 		
@@ -477,6 +511,26 @@ public final class Model
 			return lCurveY;
 		}
 		
+		// Get x's of the default right curve for the lenses
+		public double[] getDefaultRCurveX() {
+			return defaultRCurveX;
+		}
+		
+		// Get y's of the default right curve for the lenses
+		public double[] getDefaultRCurveY() {
+			return defaultRCurveY;
+		}
+		
+		// Get x's of the default left curve for the lenses
+		public double[] getDefaultLCurveX() {
+			return defaultLCurveX;
+		}
+		
+		// Get y's of the default left curve for the lenses
+		public double[] getDefaultLCurveY() {
+			return defaultLCurveY;
+		}
+		
 		// Get rotation of the element
 		public double getRotation() {
 			return rotation;
@@ -508,12 +562,20 @@ public final class Model
 			rCurveY = new double[11];
 			lCurveX = new double[11];
 			lCurveY = new double[11];
+			defaultRCurveX = new double[11];
+			defaultRCurveY = new double[11];
+			defaultLCurveX = new double[11];
+			defaultLCurveY = new double[11];
 			
 			for(i = 0, t = 0; i < 11 && t < 1.1; i++, t = t + 0.1) {
 				rCurveX[i] = (Math.pow((1-t), 2)*br.x + 2*t*(1-t)*rightCtrl.x + Math.pow(t, 2)*tr.x);
 				rCurveY[i] = (Math.pow((1-t), 2)*br.y + 2*t*(1-t)*rightCtrl.y + Math.pow(t, 2)*tr.y);
 				lCurveX[i] = (Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*leftCtrl.x + Math.pow(t, 2)*bl.x);
 				lCurveY[i] = (Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*leftCtrl.y + Math.pow(t, 2)*bl.y);
+				defaultRCurveX[i] = (Math.pow((1-t), 2)*5.0 + 2*t*(1-t)*15.0 + Math.pow(t, 2)*5.0);
+				defaultRCurveY[i] = (Math.pow((1-t), 2)*(-30.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*30.0);
+				defaultLCurveX[i] = (Math.pow((1-t), 2)*(-5.0) + 2*t*(1-t)*(-15.0) + Math.pow(t, 2)*(-5.0));
+				defaultLCurveY[i] = (Math.pow((1-t), 2)*30.0 + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-30.0));
 			}
 		}
 		
@@ -526,12 +588,20 @@ public final class Model
 			rCurveY = new double[11];
 			lCurveX = new double[11];
 			lCurveY = new double[11];
+			defaultRCurveX = new double[11];
+			defaultRCurveY = new double[11];
+			defaultLCurveX = new double[11];
+			defaultLCurveY = new double[11];
 			
 			for(i = 0, t = 0; i < 11 && t < 1.1; i++, t = t + 0.1) {
 				rCurveX[i] = (Math.pow((1-t), 2)*br.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*tr.x);
 				rCurveY[i] = (Math.pow((1-t), 2)*br.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*tr.y);
 				lCurveX[i] = (Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*bl.x);
 				lCurveY[i] = (Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*bl.y);
+				defaultRCurveX[i] = (Math.pow((1-t), 2)*10.0 + 2*t*(1-t)*0.0 + Math.pow(t,2)*10.0);
+				defaultRCurveY[i] = (Math.pow((1-t), 2)*(-30.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*30.0);
+				defaultLCurveX[i] = (Math.pow((1-t), 2)*(-10.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-10.0));
+				defaultLCurveY[i] = (Math.pow((1-t), 2)*30.0 + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-30.0));
 			}
 		}
 	}
