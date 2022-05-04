@@ -57,7 +57,7 @@ public final class Model
 	private Point2D.Double				cursor;	// Current cursor coords
 
 	// Light project model variables
-	private Point2D.Double lightPoint;
+	private Point2D.Double[] lightPoints;
 	private String status;
 	private Deque<LightElement> lightElements;
 	private boolean light;
@@ -74,10 +74,15 @@ public final class Model
 		cursor = null;
 		
 		// Initialize light project variables
-		lightPoint = new Point2D.Double(0.0, 0.0);
 		status = "Lightbox";
 		lightElements = new ArrayDeque<LightElement>();
 		light = false;
+		
+		lightPoints = new Point2D.Double[11];
+		for(int i = 0; i < lightPoints.length; i++)
+		{
+			lightPoints[i] = new Point2D.Double(0.0, 0.0);
+		}
 	}
 
 	//**********************************************************************
@@ -94,10 +99,10 @@ public final class Model
 	
 	// Light project getter methods
 	
-	// Get the point of the object that represents the lightbeam
-	public Point2D.Double getLightPoint()
+	// Get the light points
+	public Point2D.Double[] getLightPoints()
 	{
-		return lightPoint;
+		return lightPoints;
 	}
 	
 	// Get the type of object being placed
@@ -300,11 +305,15 @@ public final class Model
 			if(le.getType().equals("Lightbox"))
 			{
 				double rotation = le.getRotation();
-				double x = Math.cos(Math.toRadians(rotation))*25.0 + le.getCenter().x;
-				double y = Math.sin(Math.toRadians(rotation))*25.0 + le.getCenter().y;
 				
-				lightPoint.setLocation(x, y);
-				
+				for(int i = 0; i < lightPoints.length; i++)
+				{
+					double x = Math.cos(Math.toRadians(rotation))*25.0 -
+								Math.sin(Math.toRadians(rotation))*(5 - i) + le.getCenter().x;
+					double y = Math.sin(Math.toRadians(rotation))*25.0 +
+								Math.cos(Math.toRadians(rotation))*(5 - i) + le.getCenter().y;
+					lightPoints[i].setLocation(x, y);
+				}
 				break;
 			}
 		}
@@ -388,14 +397,11 @@ public final class Model
 		Point2D.Double tl;
 		Point2D.Double t;
 		Point2D.Double center;
-		double[] rCurveX;
-		double[] rCurveY;
-		double[] lCurveX;
-		double[] lCurveY;
-		double[] defaultRCurveX;
-		double[] defaultRCurveY;
-		double[] defaultLCurveX;
-		double[] defaultLCurveY;
+		Point2D.Double[] rCurve;
+		Point2D.Double[] lCurve;
+		Point2D.Double[] defaultRCurve;
+		Point2D.Double[] defaultLCurve;
+		double radius;
 		double rotation;
 		String type;
 		
@@ -491,44 +497,24 @@ public final class Model
 			return center;
 		}
 		
-		// Get x's of the right curve for the lenses
-		public double[] getRCurveX() {
-			return rCurveX;
+		public Point2D.Double[] getRCurve() {
+			return rCurve;
 		}
 		
-		// Get y's of the right curve for the lenses
-		public double[] getRCurveY() {
-			return rCurveY;
+		public Point2D.Double[] getLCurve() {
+			return lCurve;
 		}
 		
-		// Get x's of the left curve for the lenses
-		public double[] getLCurveX() {
-			return lCurveX;
+		public Point2D.Double[] getDefaultRCurve() {
+			return defaultRCurve;
 		}
 		
-		// Get y's of the left curve for the lenses
-		public double[] getLCurveY() {
-			return lCurveY;
+		public Point2D.Double[] getDefaultLCurve() {
+			return defaultLCurve;
 		}
 		
-		// Get x's of the default right curve for the lenses
-		public double[] getDefaultRCurveX() {
-			return defaultRCurveX;
-		}
-		
-		// Get y's of the default right curve for the lenses
-		public double[] getDefaultRCurveY() {
-			return defaultRCurveY;
-		}
-		
-		// Get x's of the default left curve for the lenses
-		public double[] getDefaultLCurveX() {
-			return defaultLCurveX;
-		}
-		
-		// Get y's of the default left curve for the lenses
-		public double[] getDefaultLCurveY() {
-			return defaultLCurveY;
+		public double getRadius() {
+			return radius;
 		}
 		
 		// Get rotation of the element
@@ -558,24 +544,20 @@ public final class Model
 			int i;
 			double t;
 			
-			rCurveX = new double[11];
-			rCurveY = new double[11];
-			lCurveX = new double[11];
-			lCurveY = new double[11];
-			defaultRCurveX = new double[11];
-			defaultRCurveY = new double[11];
-			defaultLCurveX = new double[11];
-			defaultLCurveY = new double[11];
+			rCurve = new Point2D.Double[11];
+			lCurve = new Point2D.Double[11];
+			defaultRCurve = new Point2D.Double[11];
+			defaultLCurve = new Point2D.Double[11];
 			
 			for(i = 0, t = 0; i < 11 && t < 1.1; i++, t = t + 0.1) {
-				rCurveX[i] = (Math.pow((1-t), 2)*br.x + 2*t*(1-t)*rightCtrl.x + Math.pow(t, 2)*tr.x);
-				rCurveY[i] = (Math.pow((1-t), 2)*br.y + 2*t*(1-t)*rightCtrl.y + Math.pow(t, 2)*tr.y);
-				lCurveX[i] = (Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*leftCtrl.x + Math.pow(t, 2)*bl.x);
-				lCurveY[i] = (Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*leftCtrl.y + Math.pow(t, 2)*bl.y);
-				defaultRCurveX[i] = (Math.pow((1-t), 2)*5.0 + 2*t*(1-t)*15.0 + Math.pow(t, 2)*5.0);
-				defaultRCurveY[i] = (Math.pow((1-t), 2)*(-30.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*30.0);
-				defaultLCurveX[i] = (Math.pow((1-t), 2)*(-5.0) + 2*t*(1-t)*(-15.0) + Math.pow(t, 2)*(-5.0));
-				defaultLCurveY[i] = (Math.pow((1-t), 2)*30.0 + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-30.0));
+				rCurve[i] = new Point2D.Double((Math.pow((1-t), 2)*br.x + 2*t*(1-t)*rightCtrl.x + Math.pow(t, 2)*tr.x),
+						(Math.pow((1-t), 2)*br.y + 2*t*(1-t)*rightCtrl.y + Math.pow(t, 2)*tr.y));
+				lCurve[i] = new Point2D.Double((Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*leftCtrl.x + Math.pow(t, 2)*bl.x),
+						(Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*leftCtrl.y + Math.pow(t, 2)*bl.y));
+				defaultRCurve[i] = new Point2D.Double((Math.pow((1-t), 2)*5.0 + 2*t*(1-t)*15.0 + Math.pow(t, 2)*5.0),
+						(Math.pow((1-t), 2)*(-30.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*30.0));
+				defaultLCurve[i] = new Point2D.Double((Math.pow((1-t), 2)*(-5.0) + 2*t*(1-t)*(-15.0) + Math.pow(t, 2)*(-5.0)),
+						(Math.pow((1-t), 2)*30.0 + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-30.0)));
 			}
 		}
 		
@@ -584,24 +566,20 @@ public final class Model
 			int i;
 			double t;
 			
-			rCurveX = new double[11];
-			rCurveY = new double[11];
-			lCurveX = new double[11];
-			lCurveY = new double[11];
-			defaultRCurveX = new double[11];
-			defaultRCurveY = new double[11];
-			defaultLCurveX = new double[11];
-			defaultLCurveY = new double[11];
+			rCurve = new Point2D.Double[11];
+			lCurve = new Point2D.Double[11];
+			defaultRCurve = new Point2D.Double[11];
+			defaultLCurve = new Point2D.Double[11];
 			
 			for(i = 0, t = 0; i < 11 && t < 1.1; i++, t = t + 0.1) {
-				rCurveX[i] = (Math.pow((1-t), 2)*br.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*tr.x);
-				rCurveY[i] = (Math.pow((1-t), 2)*br.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*tr.y);
-				lCurveX[i] = (Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*bl.x);
-				lCurveY[i] = (Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*bl.y);
-				defaultRCurveX[i] = (Math.pow((1-t), 2)*10.0 + 2*t*(1-t)*0.0 + Math.pow(t,2)*10.0);
-				defaultRCurveY[i] = (Math.pow((1-t), 2)*(-30.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*30.0);
-				defaultLCurveX[i] = (Math.pow((1-t), 2)*(-10.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-10.0));
-				defaultLCurveY[i] = (Math.pow((1-t), 2)*30.0 + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-30.0));
+				rCurve[i] = new Point2D.Double((Math.pow((1-t), 2)*br.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*tr.x),
+						(Math.pow((1-t), 2)*br.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*tr.y));
+				lCurve[i] = new Point2D.Double((Math.pow((1-t), 2)*tl.x + 2*t*(1-t)*center.x + Math.pow(t, 2)*bl.x),
+						(Math.pow((1-t), 2)*tl.y + 2*t*(1-t)*center.y + Math.pow(t, 2)*bl.y));
+				defaultRCurve[i] = new Point2D.Double((Math.pow((1-t), 2)*10.0 + 2*t*(1-t)*0.0 + Math.pow(t,2)*10.0),
+						(Math.pow((1-t), 2)*(-30.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*30.0));
+				defaultLCurve[i] = new Point2D.Double((Math.pow((1-t), 2)*(-10.0) + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-10.0)),
+						(Math.pow((1-t), 2)*30.0 + 2*t*(1-t)*0.0 + Math.pow(t, 2)*(-30.0)));
 			}
 		}
 	}
