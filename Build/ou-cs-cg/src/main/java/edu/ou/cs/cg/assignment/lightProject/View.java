@@ -22,6 +22,7 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.*;
@@ -75,15 +76,10 @@ public final class View
 	private final MouseHandler			mouseHandler;
 	
 	// These are the trace for the lightbeam
-	private final Deque<Point2D.Double>	hitPoints1;
-	private final Deque<Point2D.Double> hitPoints2;
+	private final List<ArrayDeque<Point2D.Double>> hitPoints;
 	
 	// The vectors for the lightpoints
-	private Point2D.Double vector1 = new Point2D.Double(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
-	
-	private Point2D.Double vector2 = new Point2D.Double(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
-	
-	
+	private Point2D.Double[] vectors;
 
 	//**********************************************************************
 	// Constructors and Finalizer
@@ -100,8 +96,18 @@ public final class View
 		// Initialize model (scene data and parameter manager)
 		model = new Model(this);
 		
-		hitPoints1 = new ArrayDeque<Point2D.Double>();
-		hitPoints2 = new ArrayDeque<Point2D.Double>();
+		hitPoints = new ArrayList<>(11);
+		
+		for(int i = 0; i < 11; i++)
+		{
+			hitPoints.add(new ArrayDeque<Point2D.Double>());
+		}
+		
+		vectors = new Point2D.Double[11];
+		for(int i = 0; i < vectors.length; i++)
+		{
+			vectors[i] = new Point2D.Double(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
+		}
 
 		// Initialize controller (interaction handlers)
 		keyHandler = new KeyHandler(this, model);
@@ -138,7 +144,10 @@ public final class View
 	// Clears the trace and resets the vector
 	public void clearLight()
 	{
-		hitPoints1.clear();
+		for(ArrayDeque<Point2D.Double> hp : hitPoints)
+		{
+			hp.clear();
+		}
 		
 		ArrayDeque<Model.LightElement> elements = new ArrayDeque<Model.LightElement>(model.getLightElements());
 		
@@ -167,14 +176,23 @@ public final class View
 				ndx = ndx / nn;	// Divide each coordinate by the length to
 				ndy = ndy / nn;	// make a UNIT vector normal to the side.
 				
-				vector1.setLocation(ndx / DEFAULT_FRAMES_PER_SECOND, ndy / DEFAULT_FRAMES_PER_SECOND);
+				for(Point2D.Double v : vectors)
+				{
+					v.setLocation(ndx / DEFAULT_FRAMES_PER_SECOND, ndy / DEFAULT_FRAMES_PER_SECOND);
+				}
+				
 				noLightBox = false;
 				break;
 			}
 		}
 		
 		if(noLightBox)
-			vector1.setLocation(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
+		{
+			for(Point2D.Double v : vectors)
+			{
+				v.setLocation(1.0 / DEFAULT_FRAMES_PER_SECOND, 0.0);
+			}
+		}
 	}
 
 	//**********************************************************************
@@ -219,9 +237,12 @@ public final class View
 	{
 		counter++;									// Advance animation counter
 		
-		Point2D.Double lp = model.getLightPoint();
+		Point2D.Double[] lps = model.getLightPoints();
 		
-		updatePointWithReflection(lp);
+		for(int i = 0; i < 11; i++)
+		{
+			updatePointWithReflection(lps[i], i);			
+		}
 	}
 
 	private void	render(GLAutoDrawable drawable)
@@ -316,15 +337,18 @@ public final class View
 	// Debugging method to make the location of the lightpoint known
 	private void	drawObject(GL2 gl)
 	{
-		Point2D.Double	object = model.getLightPoint();
+		Point2D.Double[] objects = model.getLightPoints();
 
 		gl.glColor3f(1.0f, 0.0f, 0.0f);
 
-		gl.glBegin(GL.GL_POINTS);
-
-		gl.glVertex2d(object.x, object.y);
-
-		gl.glEnd();
+		for(Point2D.Double lp : objects)
+		{
+			gl.glBegin(GL.GL_POINTS);
+			
+			gl.glVertex2d(lp.x, lp.y);
+			
+			gl.glEnd();			
+		}
 	}
 
 	// Draw a cursor
@@ -356,8 +380,6 @@ public final class View
 		
 		setColor(gl, 93, 201, 244);		// Cyan
 		
-		
-		
 		for(Model.LightElement le : elements)
 		{
 			if(le.getType().equals("Lightbox"))
@@ -378,6 +400,27 @@ public final class View
 				
 				gl.glPopMatrix();
 				
+				if(le.equals(elements.peekLast()))
+				{
+					gl.glPushMatrix();
+					
+					gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+					gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
+					
+					gl.glColor3f(1.0f, 1.0f, 1.0f);
+					
+					gl.glBegin(GL.GL_LINE_LOOP);
+					
+					gl.glVertex2d(-25.0, -25.0);
+					gl.glVertex2d(25.0, -25.0);
+					gl.glVertex2d(25.0, 25.0);
+					gl.glVertex2d(-25.0, 25.0);
+					
+					gl.glEnd();
+					
+					gl.glPopMatrix();
+				}
+				
 				break;
 			}
 		}
@@ -393,14 +436,18 @@ public final class View
 		
 		gl.glColor3f(1.0f, 1.0f, 1.0f);
 		
-		gl.glBegin(GL.GL_LINE_STRIP);
-		
-		for (Point2D.Double hp : hitPoints1)
+		for(ArrayDeque<Point2D.Double> hp : hitPoints)
 		{
-			gl.glVertex2d(hp.x, hp.y);
+			gl.glBegin(GL.GL_LINE_STRIP);
+			
+			for(Point2D.Double p : hp)
+			{
+				gl.glVertex2d(p.x, p.y);
+			}
+			
+			gl.glEnd();
 		}
 		
-		gl.glEnd();
 	}
 	
 	// Draw the mirrors
@@ -429,6 +476,27 @@ public final class View
 				gl.glEnd();
 				
 				gl.glPopMatrix();
+				
+				if(le.equals(elements.peekLast()))
+				{
+					gl.glPushMatrix();
+					
+					gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+					gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
+					
+					gl.glColor3f(1.0f, 1.0f, 1.0f);
+					
+					gl.glBegin(GL.GL_LINE_LOOP);
+					
+					gl.glVertex2d(-5.0, -30.0);
+					gl.glVertex2d(5.0, -30.0);
+					gl.glVertex2d(5.0, 30.0);
+					gl.glVertex2d(-5.0, 30.0);
+					
+					gl.glEnd();
+					
+					gl.glPopMatrix();
+				}
 			}
 		}
 	}
@@ -458,6 +526,26 @@ public final class View
 				gl.glEnd();
 				
 				gl.glPopMatrix();
+				
+				if(le.equals(elements.peekLast()))
+				{
+					gl.glPushMatrix();
+					
+					gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+					gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
+					
+					gl.glColor3f(1.0f, 1.0f, 1.0f);
+					
+					gl.glBegin(GL.GL_LINE_LOOP);
+					
+					gl.glVertex2d(-25.0, -25.0);
+					gl.glVertex2d(25.0, -25.0);
+					gl.glVertex2d(0.0, 25.0);
+					
+					gl.glEnd();
+					
+					gl.glPopMatrix();
+				}
 			}
 		}
 	}
@@ -470,19 +558,16 @@ public final class View
 		setColor(gl, 199, 199, 199);	// Light gray
 		
 		int i;
-		double[] rCurveX;
-		double[] rCurveY;
-		double[] lCurveX;
-		double[] lCurveY;
+
+		Point2D.Double[] rCurve;
+		Point2D.Double[] lCurve;
 		
 		for(Model.LightElement le : elements)
 		{
 			if(le.getType().equals("Convex"))
 			{
-				rCurveX = le.getDefaultRCurveX();
-				rCurveY = le.getDefaultRCurveY();
-				lCurveX = le.getDefaultLCurveX();
-				lCurveY = le.getDefaultLCurveY();
+				rCurve = le.getDefaultRCurve();
+				lCurve = le.getDefaultLCurve();
 				
 				gl.glPushMatrix();
 				
@@ -496,7 +581,7 @@ public final class View
 				
 				for(i = 0; i < 11; i++)
 				{
-					gl.glVertex2d(rCurveX[i], rCurveY[i]);
+					gl.glVertex2d(rCurve[i].x, rCurve[i].y);
 				}
 				
 				gl.glVertex2d(5.0, 30.0);
@@ -504,12 +589,44 @@ public final class View
 				
 				for(i = 0; i < 11; i++)
 				{
-					gl.glVertex2d(lCurveX[i], lCurveY[i]);
+					gl.glVertex2d(lCurve[i].x, lCurve[i].y);
 				}
 				
 				gl.glEnd();
 				
 				gl.glPopMatrix();
+				
+				if(le.equals(elements.peekLast()))
+				{
+					gl.glPushMatrix();
+					
+					gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+					gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
+					
+					gl.glColor3f(1.0f, 1.0f, 1.0f);
+					
+					gl.glBegin(GL.GL_LINE_LOOP);
+					
+					gl.glVertex2d(-5.0, -30.0);
+					gl.glVertex2d(5.0, -30.0);
+					
+					for(i = 0; i < 11; i++)
+					{
+						gl.glVertex2d(rCurve[i].x, rCurve[i].y);
+					}
+					
+					gl.glVertex2d(5.0, 30.0);
+					gl.glVertex2d(-5.0, 30.0);
+					
+					for(i = 0; i < 11; i++)
+					{
+						gl.glVertex2d(lCurve[i].x, lCurve[i].y);
+					}
+					
+					gl.glEnd();
+					
+					gl.glPopMatrix();
+				}
 			}
 		}
 	}
@@ -520,10 +637,9 @@ public final class View
 		ArrayDeque<Model.LightElement> elements = new ArrayDeque<Model.LightElement>(model.getLightElements());
 		
 		int i;
-		double[] rCurveX;
-		double[] rCurveY;
-		double[] lCurveX;
-		double[] lCurveY;
+		
+		Point2D.Double[] rCurve;
+		Point2D.Double[] lCurve;
 		
 		setColor(gl, 199, 199, 199);	// Light gray
 		
@@ -531,10 +647,8 @@ public final class View
 		{
 			if(le.getType().equals("Concave"))
 			{
-				rCurveX = le.getDefaultRCurveX();
-				rCurveY = le.getDefaultRCurveY();
-				lCurveX = le.getDefaultLCurveX();
-				lCurveY = le.getDefaultLCurveY();
+				rCurve = le.getDefaultRCurve();
+				lCurve = le.getDefaultLCurve();
 				
 				gl.glPushMatrix();
 				
@@ -550,7 +664,7 @@ public final class View
 				
 				for(i = 0; i < 11; i++)
 				{
-					gl.glVertex2d(rCurveX[i], rCurveY[i]);
+					gl.glVertex2d(rCurve[i].x, rCurve[i].y);
 				}
 				
 				gl.glVertex2d(10.0, 30.0);
@@ -558,18 +672,50 @@ public final class View
 				
 				for(i = 0; i < 11; i++)
 				{
-					gl.glVertex2d(lCurveX[i], lCurveY[i]);
+					gl.glVertex2d(lCurve[i].x, lCurve[i].y);
 				}
 				
 				gl.glEnd();
 				
 				gl.glPopMatrix();
+				
+				if(le.equals(elements.peekLast()))
+				{
+					gl.glPushMatrix();
+					
+					gl.glTranslated(le.getCenter().x, le.getCenter().y, 0.0);
+					gl.glRotated(le.getRotation(), 0.0, 0.0, 1.0);
+					
+					gl.glColor3f(1.0f, 1.0f, 1.0f);
+					
+					gl.glBegin(GL.GL_LINE_LOOP);
+					
+					gl.glVertex2d(-10.0, -30.0);
+					gl.glVertex2d(10.0, -30.0);
+					
+					for(i = 0; i < 11; i++)
+					{
+						gl.glVertex2d(rCurve[i].x, rCurve[i].y);
+					}
+					
+					gl.glVertex2d(10.0, 30.0);
+					gl.glVertex2d(-10.0, 30.0);
+					
+					for(i = 0; i < 11; i++)
+					{
+						gl.glVertex2d(lCurve[i].x, lCurve[i].y);
+					}
+					
+					gl.glEnd();
+					
+					gl.glPopMatrix();
+				}
 			}
 		}
 	}
 	
 	// Update the location of the light point
-	private void updatePointWithReflection(Point2D.Double lp)
+	private void updatePointWithReflection(Point2D.Double lp, int index)
 	{
 		// Check if a lightbox has been set
 		if((lp.x == 0.0 && lp.y == 0.0) || !model.getLight())
@@ -579,10 +725,10 @@ public final class View
 		
 		// Travel factor and factored direction vector
 		double factor = w * 0.1;
-		double ddx = vector1.x * factor;
-		double ddy = vector1.y * factor;
+		double ddx = vectors[index].x * factor;
+		double ddy = vectors[index].y * factor;
 		
-		System.out.println(factor);
+		//System.out.println(factor);
 		
 		// Get the list of objects in scene
 		ArrayDeque<Model.LightElement> elements = new ArrayDeque<Model.LightElement>(model.getLightElements());
@@ -590,6 +736,7 @@ public final class View
 		// Method variables
 		int number = elements.size();
 		int i;
+		int j;
 		String hitType = "NA";
 		
 		pointCalc: while (true)
@@ -598,15 +745,16 @@ public final class View
 			// store that side's vertices and the parametric time to hit it.
 			Point2D.Double		pp1 = new Point2D.Double();
 			Point2D.Double		pp2 = new Point2D.Double();
+			
 			double				tmin = Double.MAX_VALUE;
 			
 			// Temp used to store previous tmin value
 			double 				temp;
 			
 			// Adds a point to the trace if there are none
-			if(hitPoints1.isEmpty())
+			if(hitPoints.get(index).isEmpty())
 			{
-				hitPoints1.add(new Point2D.Double(lp.x, lp.y));
+				hitPoints.get(index).add(new Point2D.Double(lp.x, lp.y));
 			}
 			
 			// Get the tmins of all objects
@@ -620,31 +768,64 @@ public final class View
 					// The lenses should check the curve, but for now they only use the corners
 					case "Convex":
 					case "Concave":
+						Point2D.Double[] rCurve = element.getRCurve();
+						Point2D.Double[] lCurve = element.getLCurve();
+						tmin = getTMin(getTransformedPoint(element.getBl(), element),
+										getTransformedPoint(element.getBr(), element),
+										ddx, ddy, pp1, pp2, tmin, lp, index);
+						tmin = getTMin(getTransformedPoint(element.getBr(), element),
+										getTransformedPoint(rCurve[0], element),
+										ddx, ddy, pp1, pp2, tmin, lp, index);
+						for(j = 0; j < rCurve.length - 1; j++)
+						{
+							tmin = getTMin(getTransformedPoint(rCurve[j], element),
+											getTransformedPoint(rCurve[j + 1], element),
+											ddx, ddy, pp1, pp2, tmin, lp, index);
+						}
+						tmin = getTMin(getTransformedPoint(rCurve[10], element),
+										getTransformedPoint(element.getTr(), element),
+										ddx, ddy, pp1, pp2, tmin, lp, index);
+						tmin = getTMin(getTransformedPoint(element.getTr(), element),
+										getTransformedPoint(element.getTl(), element),
+										ddx, ddy, pp1, pp2, tmin, lp, index);
+						tmin = getTMin(getTransformedPoint(element.getTl(), element),
+										getTransformedPoint(lCurve[0], element),
+										ddx, ddy, pp1, pp2, tmin, lp, index);
+						for(j = 0; j < lCurve.length - 1; j++)
+						{
+							tmin = getTMin(getTransformedPoint(lCurve[j], element),
+											getTransformedPoint(lCurve[j + 1], element),
+											ddx, ddy, pp1, pp2, tmin, lp, index);
+						}
+						tmin = getTMin(getTransformedPoint(lCurve[10], element),
+										getTransformedPoint(element.getBl(), element),
+										ddx, ddy, pp1, pp2, tmin, lp, index);
+						break;
 					case "Mirror":
 					case "Lightbox":
 						tmin = getTMin(getTransformedPoint(element.getBl(), element), 
 										getTransformedPoint(element.getBr(), element), 
-										ddx, ddy, pp1, pp2, tmin, lp);
+										ddx, ddy, pp1, pp2, tmin, lp, index);
 						tmin = getTMin(getTransformedPoint(element.getBr(), element), 
 										getTransformedPoint(element.getTr(), element), 
-										ddx, ddy, pp1, pp2, tmin, lp);
+										ddx, ddy, pp1, pp2, tmin, lp, index);
 						tmin = getTMin(getTransformedPoint(element.getTr(), element), 
 										getTransformedPoint(element.getTl(), element), 
-										ddx, ddy, pp1, pp2, tmin, lp);
+										ddx, ddy, pp1, pp2, tmin, lp, index);
 						tmin = getTMin(getTransformedPoint(element.getTl(), element), 
 										getTransformedPoint(element.getBl(), element), 
-										ddx, ddy, pp1, pp2, tmin, lp);
+										ddx, ddy, pp1, pp2, tmin, lp, index);
 						break;
 					case "Prism":
 						tmin = getTMin(getTransformedPoint(element.getBl(), element), 
 										getTransformedPoint(element.getBr(), element), 
-										ddx, ddy, pp1, pp2, tmin, lp);
+										ddx, ddy, pp1, pp2, tmin, lp, index);
 						tmin = getTMin(getTransformedPoint(element.getBr(), element), 
 										getTransformedPoint(element.getT(), element), 
-										ddx, ddy, pp1, pp2, tmin, lp);
+										ddx, ddy, pp1, pp2, tmin, lp, index);
 						tmin = getTMin(getTransformedPoint(element.getT(), element), 
 										getTransformedPoint(element.getBl(), element), 
-										ddx, ddy, pp1, pp2, tmin, lp);
+										ddx, ddy, pp1, pp2, tmin, lp, index);
 						break;
 				}
 				
@@ -656,20 +837,20 @@ public final class View
 				elements.offerLast(elements.pollFirst());
 			}
 			
-			System.out.printf("%f \n", tmin);
+			//System.out.printf("%f \n", tmin);
 
 			// Increment normally if greater than 1.0
 			if((tmin / factor) > 1.0)
 			{
 				lp.x += ddx;
 				lp.y += ddy;
-				hitPoints1.add(new Point2D.Double(lp.x, lp.y));
+				hitPoints.get(index).add(new Point2D.Double(lp.x, lp.y));
 				
 				break;
 			}
 			else
 			{
-				System.out.println(hitType);
+				//System.out.println(hitType);
 				switch(hitType)
 				{
 					case "Mirror":
@@ -677,7 +858,7 @@ public final class View
 						// Translate the point to the reflection point along the side.
 						lp.x += ddx * (tmin / factor);
 						lp.y += ddy * (tmin / factor);
-						hitPoints1.offerLast(new Point2D.Double(lp.x, lp.y));
+						hitPoints.get(index).offerLast(new Point2D.Double(lp.x, lp.y));
 
 						// Calculate the CW (outward-pointing) perp vector for the side.
 						double		vdx = pp2.x - pp1.x;	// Calc side vector
@@ -692,7 +873,7 @@ public final class View
 						ndy = ndy / nn;	// make a UNIT vector normal to the side.
 
 						// Calculate v_reflected.
-						double		dot = dot(vector1.x * 2, vector1.y * 2, 0.0, ndx, ndy, 0.0);
+						double		dot = dot(vectors[index].x * 2, vectors[index].y * 2, 0.0, ndx, ndy, 0.0);
 						double		vreflectedx = ddx - 2.0 * dot * ndx;
 						double		vreflectedy = ddy - 2.0 * dot * ndy;
 
@@ -703,19 +884,23 @@ public final class View
 
 						// Also reflect the reference vector. It will change direction
 						// but remain the same length.
-						double		dot2 = dot(vector1.x, vector1.y, 0.0, ndx, ndy, 0.0);
+						double		dot2 = dot(vectors[index].x, vectors[index].y, 0.0, ndx, ndy, 0.0);
 
-						vector1.x -= 2.0 * dot2 * ndx;
-						vector1.y -= 2.0 * dot2 * ndy;
+						vectors[index].x -= 2.0 * dot2 * ndx;
+						vectors[index].y -= 2.0 * dot2 * ndy;
 						break;
 					case "Lightbox":
 						// Move lightpoint to the edge of the lightbox and stop it
 						lp.x += ddx * (tmin / factor);
 						lp.y += ddy * (tmin / factor);
-						vector1.x = 0.0;
-						vector1.y = 0.0;
-						hitPoints1.offerLast(new Point2D.Double(lp.x, lp.y));
+						vectors[index].x = 0.0;
+						vectors[index].y = 0.0;
+						hitPoints.get(index).offerLast(new Point2D.Double(lp.x, lp.y));
 						break pointCalc;
+					default:
+						lp.x += ddx;
+						lp.y += ddy;
+						hitPoints.get(index).add(new Point2D.Double(lp.x, lp.y));
 				}
 			}
 		}
@@ -727,7 +912,7 @@ public final class View
 	
 	// Gets the tmin of object within the path of the lightpoint
 	private double getTMin(Point2D.Double p1, Point2D.Double p2, double ddx, double ddy, 
-			Point2D.Double pp1, Point2D.Double pp2, double tmin, Point2D.Double lp)
+			Point2D.Double pp1, Point2D.Double pp2, double tmin, Point2D.Double lp, int index)
 	{
 		// Calculate the CW (outward-pointing) perp vector for the pair.
 		double			vdx = p2.x - p1.x;		// Calc side vector
@@ -760,7 +945,7 @@ public final class View
 		if (dnw < 0.0)
 		{
 			// Calculate the bottom part of the t_hit equation.
-			double	dnv = dot(ndx, ndy, 0.0, vector1.x * 2, vector1.y * 2, 0.0);
+			double	dnv = dot(ndx, ndy, 0.0, vectors[index].x * 2, vectors[index].y * 2, 0.0);
 
 			// If the dot product is zero, the direction of motion is
 			// parallel to the side. Disqualify it as a hit candidate
