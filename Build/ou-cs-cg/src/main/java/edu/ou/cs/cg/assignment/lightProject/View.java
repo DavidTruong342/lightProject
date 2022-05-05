@@ -75,7 +75,7 @@ public final class View
 	private final KeyHandler			keyHandler;
 	private final MouseHandler			mouseHandler;
 	
-	// These are the trace for the lightbeam
+	// These are the traces for the lightbeams
 	private final List<ArrayDeque<Point2D.Double>> hitPoints;
 	
 	// The vectors for the lightpoints
@@ -96,9 +96,9 @@ public final class View
 		// Initialize model (scene data and parameter manager)
 		model = new Model(this);
 		
-		hitPoints = new ArrayList<>(11);
+		hitPoints = new ArrayList<>(5);
 		
-		for(int i = 0; i < 11; i++)
+		for(int i = 0; i < 5; i++)
 		{
 			hitPoints.add(new ArrayDeque<Point2D.Double>());
 		}
@@ -144,6 +144,7 @@ public final class View
 	// Clears the trace and resets the vector
 	public void clearLight()
 	{
+		// Clear all traces
 		for(ArrayDeque<Point2D.Double> hp : hitPoints)
 		{
 			hp.clear();
@@ -176,6 +177,7 @@ public final class View
 				ndx = ndx / nn;	// Divide each coordinate by the length to
 				ndy = ndy / nn;	// make a UNIT vector normal to the side.
 				
+				// Set the direction vectors for the lightpoints
 				for(Point2D.Double v : vectors)
 				{
 					v.setLocation(ndx / DEFAULT_FRAMES_PER_SECOND, ndy / DEFAULT_FRAMES_PER_SECOND);
@@ -186,6 +188,7 @@ public final class View
 			}
 		}
 		
+		// Set vectors to default values if no lightbox is in scene
 		if(noLightBox)
 		{
 			for(Point2D.Double v : vectors)
@@ -239,7 +242,7 @@ public final class View
 		
 		Point2D.Double[] lps = model.getLightPoints();
 		
-		for(int i = 0; i < 11; i++)
+		for(int i = 0; i < lps.length; i++)
 		{
 			updatePointWithReflection(lps[i], i);			
 		}
@@ -409,6 +412,8 @@ public final class View
 					
 					gl.glColor3f(1.0f, 1.0f, 1.0f);
 					
+					gl.glLineWidth(2.0f);
+					
 					gl.glBegin(GL.GL_LINE_LOOP);
 					
 					gl.glVertex2d(-25.0, -25.0);
@@ -417,6 +422,8 @@ public final class View
 					gl.glVertex2d(-25.0, 25.0);
 					
 					gl.glEnd();
+					
+					gl.glLineWidth(1.0f);
 					
 					gl.glPopMatrix();
 				}
@@ -436,6 +443,8 @@ public final class View
 		
 		gl.glColor3f(1.0f, 1.0f, 1.0f);
 		
+		gl.glLineWidth(2.0f);
+		
 		for(ArrayDeque<Point2D.Double> hp : hitPoints)
 		{
 			gl.glBegin(GL.GL_LINE_STRIP);
@@ -447,6 +456,8 @@ public final class View
 			
 			gl.glEnd();
 		}
+		
+		gl.glLineWidth(1.0f);
 		
 	}
 	
@@ -486,6 +497,8 @@ public final class View
 					
 					gl.glColor3f(1.0f, 1.0f, 1.0f);
 					
+					gl.glLineWidth(2.0f);
+					
 					gl.glBegin(GL.GL_LINE_LOOP);
 					
 					gl.glVertex2d(-5.0, -30.0);
@@ -494,6 +507,8 @@ public final class View
 					gl.glVertex2d(-5.0, 30.0);
 					
 					gl.glEnd();
+					
+					gl.glLineWidth(1.0f);
 					
 					gl.glPopMatrix();
 				}
@@ -536,6 +551,8 @@ public final class View
 					
 					gl.glColor3f(1.0f, 1.0f, 1.0f);
 					
+					gl.glLineWidth(2.0f);
+					
 					gl.glBegin(GL.GL_LINE_LOOP);
 					
 					gl.glVertex2d(-25.0, -25.0);
@@ -543,6 +560,8 @@ public final class View
 					gl.glVertex2d(0.0, 25.0);
 					
 					gl.glEnd();
+					
+					gl.glLineWidth(1.0f);
 					
 					gl.glPopMatrix();
 				}
@@ -605,6 +624,8 @@ public final class View
 					
 					gl.glColor3f(1.0f, 1.0f, 1.0f);
 					
+					gl.glLineWidth(2.0f);
+					
 					gl.glBegin(GL.GL_LINE_LOOP);
 					
 					gl.glVertex2d(-5.0, -30.0);
@@ -624,6 +645,8 @@ public final class View
 					}
 					
 					gl.glEnd();
+					
+					gl.glLineWidth(1.0f);
 					
 					gl.glPopMatrix();
 				}
@@ -688,6 +711,8 @@ public final class View
 					
 					gl.glColor3f(1.0f, 1.0f, 1.0f);
 					
+					gl.glLineWidth(2.0f);
+					
 					gl.glBegin(GL.GL_LINE_LOOP);
 					
 					gl.glVertex2d(-10.0, -30.0);
@@ -708,6 +733,8 @@ public final class View
 					
 					gl.glEnd();
 					
+					gl.glLineWidth(1.0f);
+					
 					gl.glPopMatrix();
 				}
 			}
@@ -724,7 +751,7 @@ public final class View
 		}
 		
 		// Travel factor and factored direction vector
-		double factor = w * 0.1;
+		double factor = w * 0.2;
 		double ddx = vectors[index].x * factor;
 		double ddy = vectors[index].y * factor;
 		
@@ -765,7 +792,7 @@ public final class View
 				
 				switch(element.getType()) 
 				{
-					// The lenses should check the curve, but for now they only use the corners
+					// Check the sides of the lenses
 					case "Convex":
 					case "Concave":
 						Point2D.Double[] rCurve = element.getRCurve();
@@ -801,6 +828,7 @@ public final class View
 										getTransformedPoint(element.getBl(), element),
 										ddx, ddy, pp1, pp2, tmin, lp, index);
 						break;
+					// Check the sides of the lightbox and mirrors
 					case "Mirror":
 					case "Lightbox":
 						tmin = getTMin(getTransformedPoint(element.getBl(), element), 
@@ -816,6 +844,7 @@ public final class View
 										getTransformedPoint(element.getBl(), element), 
 										ddx, ddy, pp1, pp2, tmin, lp, index);
 						break;
+					// Check the sides of the prism
 					case "Prism":
 						tmin = getTMin(getTransformedPoint(element.getBl(), element), 
 										getTransformedPoint(element.getBr(), element), 
@@ -853,6 +882,7 @@ public final class View
 				//System.out.println(hitType);
 				switch(hitType)
 				{
+					// Light algorithm for mirrors
 					case "Mirror":
 						// If it is under 1.0, there will be at least one reflection.
 						// Translate the point to the reflection point along the side.
@@ -889,6 +919,7 @@ public final class View
 						vectors[index].x -= 2.0 * dot2 * ndx;
 						vectors[index].y -= 2.0 * dot2 * ndy;
 						break;
+					// Light algorithm for the lightbox
 					case "Lightbox":
 						// Move lightpoint to the edge of the lightbox and stop it
 						lp.x += ddx * (tmin / factor);
@@ -897,6 +928,51 @@ public final class View
 						vectors[index].y = 0.0;
 						hitPoints.get(index).offerLast(new Point2D.Double(lp.x, lp.y));
 						break pointCalc;
+					// Light algorithm for the lenses
+					case "Convex":
+					case "Concave":
+						double Tx = 0; 
+						double Ty = 0; 
+						
+						lp.x += ddx;
+						lp.y += ddy;
+						
+						vdx = pp2.x - pp1.x;	// Calc side vector
+						vdy = pp2.y - pp1.y;	// from p1 to p2
+						ndx = vdy;				// Calc perp vector:
+						ndy = -vdx;				// negate x and swap
+							
+						// Need a NORMALIZED perp vector for the reflection calculation.
+						nn = Math.sqrt(ndx * ndx + ndy * ndy);
+
+						ndx = ndx / nn;	// Divide each coordinate by the length to
+						ndy = ndy / nn;	// make a UNIT vector normal to the side.
+							
+						double delta1 = 0; 
+						double delta2 = 0; 
+						
+						dot2 = dot(vectors[index].x, vectors[index].y, 0.0, ndx, ndy, 0.0);
+						
+						delta1 = Math.acos(dot2 / (Math.sqrt(ddx*ddx + ddy*ddy)) + 
+									Math.sqrt(ndx*ndx + ndy* ndy));
+						
+						delta2 = Math.asin(Math.sin(delta1) / 1.5); 
+
+						double ior = Math.sin(delta2) / Math.sin(delta1);
+					 
+						Tx = ior * (ddx + Math.cos(delta1)*ndx) - (ndx * Math.cos(delta2));
+						Ty = ior * (ddy + Math.cos(delta1)*ndy) - (ndy * Math.cos(delta2));
+
+						nn = Math.sqrt(Tx * Tx + Ty * Ty) ;
+	
+						Tx = Tx / nn;
+						Ty = Ty / nn;
+
+						vectors[index].x = Tx / DEFAULT_FRAMES_PER_SECOND;
+						vectors[index].y = Ty / DEFAULT_FRAMES_PER_SECOND;
+
+						break pointCalc;
+					// For unimplemented objects
 					default:
 						lp.x += ddx;
 						lp.y += ddy;

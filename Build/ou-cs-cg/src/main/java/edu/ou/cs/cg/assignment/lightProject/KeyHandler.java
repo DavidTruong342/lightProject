@@ -123,11 +123,12 @@ public final class KeyHandler extends KeyAdapter
 				}
 				break;
 				
-			
-			case KeyEvent.VK_CLEAR:
 			case KeyEvent.VK_D:
+				model.clearScene(true);
+				break;
+			case KeyEvent.VK_CLEAR:
 			case KeyEvent.VK_DELETE:
-				model.clearScene();
+				model.clearScene(false);
 				return;
 		}
 	}
