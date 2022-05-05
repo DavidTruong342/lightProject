@@ -78,7 +78,7 @@ public final class Model
 		lightElements = new ArrayDeque<LightElement>();
 		light = false;
 		
-		lightPoints = new Point2D.Double[11];
+		lightPoints = new Point2D.Double[5];
 		for(int i = 0; i < lightPoints.length; i++)
 		{
 			lightPoints[i] = new Point2D.Double(0.0, 0.0);
@@ -177,11 +177,16 @@ public final class Model
 	}
 	
 	// Clear the scene of all objects
-	public void clearScene()
+	public void clearScene(boolean fullClear)
 	{
 		view.getCanvas().invoke(false, new BasicUpdater() {
 			public void update(GL2 gl) {
-				lightElements.clear();
+				if(fullClear) {
+					lightElements.clear();
+				}
+				else {
+					lightElements.pollLast();
+				}
 				toggleLight(true);
 			}
 		});;
@@ -299,6 +304,7 @@ public final class Model
 			light = !light;
 		}
 		
+		boolean noLightBox = true;
 		// Sets the lightpoint back to the lightbox and clear the trace
 		for(LightElement le : lightElements)
 		{
@@ -309,14 +315,24 @@ public final class Model
 				for(int i = 0; i < lightPoints.length; i++)
 				{
 					double x = Math.cos(Math.toRadians(rotation))*25.0 -
-								Math.sin(Math.toRadians(rotation))*(5 - i) + le.getCenter().x;
+								Math.sin(Math.toRadians(rotation))*(25 - 10 * i - 5) + le.getCenter().x;
 					double y = Math.sin(Math.toRadians(rotation))*25.0 +
-								Math.cos(Math.toRadians(rotation))*(5 - i) + le.getCenter().y;
+								Math.cos(Math.toRadians(rotation))*(25 - 10 * i - 5) + le.getCenter().y;
 					lightPoints[i].setLocation(x, y);
 				}
+				noLightBox = false;
 				break;
 			}
 		}
+		
+		if(noLightBox)
+		{
+			for(Point2D.Double lp : lightPoints)
+			{
+				lp.setLocation(0.0, 0.0);
+			}
+		}
+		
 		view.clearLight();
 	}
 	
@@ -401,7 +417,6 @@ public final class Model
 		Point2D.Double[] lCurve;
 		Point2D.Double[] defaultRCurve;
 		Point2D.Double[] defaultLCurve;
-		double radius;
 		double rotation;
 		String type;
 		
@@ -445,6 +460,7 @@ public final class Model
 					this.center = center;
 					rotation = 0.0;
 					this.type = new String(type);
+					focalLength = 30.0;
 					
 					createConvex(leftCtrl, rightCtrl);
 					break;
@@ -456,6 +472,7 @@ public final class Model
 					this.center = center;
 					rotation = 0.0;
 					this.type = new String(type);
+					focalLength = 30.0;
 					
 					createConcave();
 					break;
@@ -497,26 +514,26 @@ public final class Model
 			return center;
 		}
 		
+		// Get right curve
 		public Point2D.Double[] getRCurve() {
 			return rCurve;
 		}
 		
+		// Get left curve
 		public Point2D.Double[] getLCurve() {
 			return lCurve;
 		}
 		
+		// Get default right curve
 		public Point2D.Double[] getDefaultRCurve() {
 			return defaultRCurve;
 		}
 		
+		// Get default left curve
 		public Point2D.Double[] getDefaultLCurve() {
 			return defaultLCurve;
 		}
-		
-		public double getRadius() {
-			return radius;
-		}
-		
+
 		// Get rotation of the element
 		public double getRotation() {
 			return rotation;
